@@ -490,11 +490,26 @@
     .form-group {
       margin-bottom: 32px;
     }
-    
+
     /* 큰 터치 영역 */
     .btn, input {
       min-width: 48px;
       min-height: 80px;
+    }
+
+    /* 라벨 옵션 표시 */
+    .label-optional {
+      color: #7f8c8d;
+      font-weight: normal;
+    }
+
+    /* 필드 힌트 텍스트 */
+    .field-hint {
+      color: #666;
+      font-size: 14px;
+      margin-top: 8px;
+      display: block;
+      line-height: 1.4;
     }
   </style>
 </head>
@@ -548,14 +563,14 @@
 
         <div class="form-group">
           <label for="email">
-            이메일 <small style="color: #7f8c8d; font-weight: normal;">(선택사항)</small>
+            이메일 <small class="label-optional">(선택사항)</small>
           </label>
-          <input type="email" id="email" placeholder="이메일이 자동으로 감지됩니다" maxlength="100"
-                 autocomplete="username email" 
-                 autocapitalize="none" 
+          <input type="email" id="email" placeholder="출석 확인 이메일을 받으시려면 입력하세요" maxlength="100"
+                 autocomplete="email"
+                 autocapitalize="none"
                  autocorrect="off"
                  name="user_email">
-          <small style="color: #666; font-size: 14px; margin-top: 8px; display: block; line-height: 1.4;">
+          <small class="field-hint">
             이메일을 입력하시면 출석 확인 정보가 전송됩니다. 입력하지 않아도 출석 체크가 가능합니다.
           </small>
           <div class="validation-message" id="email-validation"></div>
@@ -591,7 +606,69 @@
     // 50세 이상 사용자 + 구형 기기 호환성 최우선
     // ES5 문법, 단순한 로직, 명확한 메시지
     // ========================================
-    
+
+    // Promise Polyfill (IE 지원)
+    if (typeof Promise === 'undefined') {
+      (function() {
+        function PromisePolyfill(executor) {
+          var self = this;
+          self.state = 'pending';
+          self.value = undefined;
+          self.handlers = [];
+
+          function resolve(value) {
+            if (self.state !== 'pending') return;
+            self.state = 'fulfilled';
+            self.value = value;
+            self.handlers.forEach(function(h) { h.onFulfilled(value); });
+          }
+
+          function reject(reason) {
+            if (self.state !== 'pending') return;
+            self.state = 'rejected';
+            self.value = reason;
+            self.handlers.forEach(function(h) { h.onRejected(reason); });
+          }
+
+          self.then = function(onFulfilled, onRejected) {
+            return new PromisePolyfill(function(res, rej) {
+              function handle(fn, fallback, val) {
+                try {
+                  if (typeof fn === 'function') {
+                    res(fn(val));
+                  } else {
+                    fallback(val);
+                  }
+                } catch (e) { rej(e); }
+              }
+              var handler = {
+                onFulfilled: function(v) { handle(onFulfilled, res, v); },
+                onRejected: function(v) { handle(onRejected, rej, v); }
+              };
+              if (self.state === 'fulfilled') {
+                setTimeout(function() { handler.onFulfilled(self.value); }, 0);
+              } else if (self.state === 'rejected') {
+                setTimeout(function() { handler.onRejected(self.value); }, 0);
+              } else {
+                self.handlers.push(handler);
+              }
+            });
+          };
+
+          self.catch = function(onRejected) {
+            return self.then(null, onRejected);
+          };
+
+          try {
+            executor(resolve, reject);
+          } catch (e) {
+            reject(e);
+          }
+        }
+        window.Promise = PromisePolyfill;
+      })();
+    }
+
     // 설정 (관리자가 수정)
     var BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzYDZWn1OzOGiQ8OOeeepVhZjpMMfeoAfZ7AlFXg2w8yQWKSvEw9X7WQXxYaVF5RjTtAA/exec';
     
@@ -674,59 +751,12 @@
 
     /**
      * 이메일 자동 채우기 시도
+     * 브라우저 기본 자동완성에 의존 (autocomplete="email" 속성 사용)
      */
     function tryAutoFillEmail() {
-      try {
-        // 1. Credential Management API 시도 (최신 브라우저)
-        if (window.navigator && navigator.credentials && navigator.credentials.get) {
-          console.log('Credential API 시도');
-          
-          navigator.credentials.get({
-            password: true,
-            federated: {
-              providers: ['https://accounts.google.com']
-            }
-          }).then(function(credential) {
-            if (credential && credential.id && credential.id.includes('@')) {
-              console.log('자동 이메일 감지 성공');
-              document.getElementById('email').value = credential.id;
-              validateField('email');
-              validateForm();
-            }
-          }).catch(function(error) {
-            console.log('Credential API 실패:', error.message);
-            tryAlternativeEmailDetection();
-          });
-          
-        } else {
-          tryAlternativeEmailDetection();
-        }
-        
-      } catch (error) {
-        console.log('이메일 자동 감지 오류:', error);
-        tryAlternativeEmailDetection();
-      }
-    }
-
-    /**
-     * 대안적 이메일 감지 방법
-     */
-    function tryAlternativeEmailDetection() {
-      try {
-        // 브라우저 자동완성 트리거
-        var emailField = document.getElementById('email');
-        if (emailField) {
-          // 포커스 후 즉시 블러하여 자동완성 트리거
-          emailField.focus();
-          setTimeout(function() {
-            emailField.blur();
-            emailField.focus();
-          }, 100);
-        }
-        
-      } catch (error) {
-        console.log('대안 이메일 감지 실패:', error);
-      }
+      // 브라우저 자동완성이 자연스럽게 작동하도록 함
+      // 별도의 API 호출 없이 autocomplete 속성에 의존
+      console.log('이메일 자동완성 대기 중 (브라우저 기본 동작)');
     }
 
     /**
@@ -1135,35 +1165,34 @@
 
     /**
      * 허용 반경 계산 (기기별 최적화)
+     * 기본 반경: 1200m (대학 캠퍼스 크기 고려)
      */
     function calculateAllowedRadius(accuracy) {
-      var baseRadius = locationSettings.location_radius;
+      var baseRadius = locationSettings.location_radius; // 기본 1200m
       var multiplier = 1.0;
-      
-      // 구형 기기 추가 보정
+
+      // 기기별 보정 (실내 GPS 오차 고려)
       if (isOldDevice) {
-        multiplier = 3.0;
+        multiplier = 1.5;
       } else if (isMobile) {
-        multiplier = 2.5; // 모바일 기기
+        multiplier = 1.2; // 모바일은 GPS가 비교적 정확
       } else {
-        multiplier = 3.0; // 데스크탑 (WiFi 위치)
+        multiplier = 1.8; // 데스크탑은 WiFi 기반이라 오차 큼
       }
-      
-      // GPS 정확도에 따른 추가 보정
-      if (accuracy > 1000) {
-        multiplier = multiplier * 2.0;
-      } else if (accuracy > 500) {
-        multiplier = multiplier * 1.5;
-      } else if (accuracy > 200) {
+
+      // GPS 정확도에 따른 추가 보정 (정확도가 낮을수록 관대하게)
+      if (accuracy > 500) {
         multiplier = multiplier * 1.3;
+      } else if (accuracy > 200) {
+        multiplier = multiplier * 1.1;
       }
-      
+
       var effectiveRadius = baseRadius * multiplier;
-      
-      // 최소/최대 제한
-      effectiveRadius = Math.max(500, effectiveRadius);
-      effectiveRadius = Math.min(5000, effectiveRadius);
-      
+
+      // 최소/최대 제한 (합리적 범위로 조정)
+      effectiveRadius = Math.max(300, effectiveRadius);  // 최소 300m
+      effectiveRadius = Math.min(2500, effectiveRadius); // 최대 2.5km
+
       return Math.round(effectiveRadius);
     }
 
@@ -1600,8 +1629,8 @@
       container.appendChild(alert);
 
       setTimeout(function() {
-        if (alert.parentNode) {
-          alert.remove();
+        if (alert && alert.parentNode) {
+          alert.parentNode.removeChild(alert);
         }
       }, type === 'success' ? 8000 : 12000); // 50세 이상을 위해 더 오래 표시
     }
