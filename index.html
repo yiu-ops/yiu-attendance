@@ -451,7 +451,10 @@
       deviceInfo: null,
       qrScanner: null,
       qrToken: null,
-      currentTab: 'manual'
+      currentTab: 'manual',
+      deviceId: null,
+      currentEventId: null,
+      preventProxy: false
     };
 
     // ========================================
@@ -468,6 +471,9 @@
     function initializeSystem() {
       console.log('시스템 초기화 시작');
 
+      // 기기 ID 생성/조회
+      state.deviceId = getDeviceId();
+
       // 기기 정보 수집
       collectDeviceInfo();
 
@@ -478,10 +484,33 @@
       // 백그라운드에서 설정 로드
       setTimeout(loadSettingsFromServer, 500);
 
+      // 현재 이벤트 ID 조회
+      setTimeout(fetchCurrentEventId, 800);
+
       // 자동 위치 확인
       setTimeout(startLocationCheck, 1500);
 
       console.log('시스템 초기화 완료');
+    }
+
+    function getDeviceId() {
+      let deviceId = localStorage.getItem('yiu_device_id');
+      if (!deviceId) {
+        deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('yiu_device_id', deviceId);
+      }
+      return deviceId;
+    }
+
+    function fetchCurrentEventId() {
+      callGoogleScript('getSystemStatus', null)
+        .then(result => {
+          if (result && result.success && result.currentEventId) {
+            state.currentEventId = result.currentEventId;
+            checkAlreadyAttended();
+          }
+        })
+        .catch(() => {});
     }
 
     function collectDeviceInfo() {
@@ -595,6 +624,10 @@
       if (settings.location_radius) {
         state.locationSettings.radius = parseFloat(settings.location_radius);
       }
+
+      // 대리 출석 방지 설정
+      state.preventProxy = settings.prevent_proxy_attendance === true || settings.prevent_proxy_attendance === 'true';
+      checkAlreadyAttended();
     }
 
     // ========================================
@@ -792,7 +825,19 @@
     function onQRCodeSuccess(decodedText) {
       console.log('QR 코드 인식:', decodedText);
 
-      // QR 토큰 검증
+      // URL 기반 QR (출석 페이지 URL)
+      if (decodedText.startsWith('http')) {
+        stopQRScanner();
+        if (decodedText.includes('index.html') || decodedText.includes(window.location.hostname)) {
+          showToast('출석 페이지에 이미 접속 중입니다. "직접 입력" 탭에서 출석해주세요.', 'info');
+          switchTab('manual');
+        } else {
+          window.location.href = decodedText;
+        }
+        return;
+      }
+
+      // QR 토큰 검증 (레거시)
       if (decodedText.startsWith(CONFIG.QR_TOKEN_PREFIX)) {
         stopQRScanner();
         state.qrToken = decodedText;
@@ -944,6 +989,13 @@
     }
 
     function submitAttendance(formData) {
+      // 대리 출석 방지 체크
+      if (state.preventProxy && state.currentEventId && hasAlreadyAttended(state.currentEventId)) {
+        showToast('이 기기에서 이미 출석이 완료되었습니다.', 'error');
+        showAlreadyAttendedMessage();
+        return;
+      }
+
       state.isSubmitting = true;
       updateSubmitButton(false);
       showLoading(true, '출석 정보를 전송하고 있습니다...');
@@ -970,6 +1022,7 @@
         longitude: position.coords.longitude,
         accuracy: position.coords.accuracy,
         timestamp: new Date().toISOString(),
+        deviceId: state.deviceId,
         ...state.deviceInfo
       };
 
@@ -1005,6 +1058,15 @@
     function completeAttendance(result) {
       state.isCompleted = true;
 
+      // 출석 기록 저장 (대리 출석 방지용)
+      if (state.currentEventId) {
+        markAsAttended(state.currentEventId);
+      }
+      if (result.eventId) {
+        state.currentEventId = result.eventId;
+        markAsAttended(result.eventId);
+      }
+
       const details = [
         `출석자: ${document.getElementById('name')?.value || document.getElementById('qrName')?.value}`,
         `소속: ${document.getElementById('department')?.value || document.getElementById('qrDepartment')?.value}`,
@@ -1030,6 +1092,38 @@
 
       // 완료 메시지로 스크롤
       document.getElementById('completionMessage').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // ========================================
+    // 대리 출석 방지
+    // ========================================
+
+    function checkAlreadyAttended() {
+      if (!state.preventProxy || !state.currentEventId) return;
+
+      if (hasAlreadyAttended(state.currentEventId)) {
+        state.isCompleted = true;
+        showAlreadyAttendedMessage();
+      }
+    }
+
+    function hasAlreadyAttended(eventId) {
+      return localStorage.getItem('yiu_attended_' + eventId) === 'true';
+    }
+
+    function markAsAttended(eventId) {
+      if (eventId) {
+        localStorage.setItem('yiu_attended_' + eventId, 'true');
+      }
+    }
+
+    function showAlreadyAttendedMessage() {
+      document.getElementById('completionMessage').classList.remove('hidden');
+      document.getElementById('completionDetails').textContent = '이 기기에서 이미 출석이 완료되었습니다.';
+      document.getElementById('manualTab').classList.add('hidden');
+      document.getElementById('qrTab').classList.add('hidden');
+      updateSubmitButton(false);
+      updateStatus('이미 출석이 완료되었습니다', 'ready');
     }
 
     // ========================================

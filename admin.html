@@ -178,9 +178,12 @@
             <div class="space-y-1">
               <p class="text-base font-bold text-gray-900 dark:text-white" id="statusMeetingTitle">-</p>
               <p class="text-sm text-gray-600 dark:text-gray-400" id="statusMeetingDesc">-</p>
-              <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                이벤트 ID: <span id="statusEventId" class="font-mono">-</span>
-              </p>
+              <div class="flex items-center gap-2 mt-2">
+                <p class="text-xs text-gray-400 dark:text-gray-500">
+                  이벤트 ID: <span id="statusEventId" class="font-mono">-</span>
+                </p>
+                <span id="statusProxyBadge" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">방지 OFF</span>
+              </div>
             </div>
           </div>
           <!-- 위치 정보 -->
@@ -265,6 +268,18 @@
 
         <!-- 보안 설정 -->
         <div id="securitySettings" class="hidden space-y-4">
+          <!-- 대리 출석 방지 토글 -->
+          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800/50 rounded-xl">
+            <div>
+              <p class="font-medium text-gray-900 dark:text-white">대리 출석 방지</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">같은 기기에서 중복 출석을 차단합니다 (테스트 시 OFF)</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0 ml-4">
+              <input type="checkbox" id="preventProxyAttendance" class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+            </label>
+          </div>
+
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">새 비밀번호</label>
             <input type="password" id="newAdminPassword" placeholder="새 비밀번호 (6자 이상)"
@@ -357,16 +372,7 @@
           </div>
 
           <div id="qrTokenInfo" class="mb-4">
-            <p class="text-sm text-gray-500 dark:text-gray-400">QR 토큰이 생성되지 않았습니다</p>
-          </div>
-
-          <div id="qrTimer" class="mb-4 hidden">
-            <div class="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm font-medium">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              <span id="qrTimeRemaining">15:00</span> 남음
-            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">새 회의를 시작하면 QR 코드가 자동 생성됩니다</p>
           </div>
 
           <div class="flex gap-2 justify-center">
@@ -491,8 +497,6 @@
       isLoggedIn: false,
       refreshInterval: null,
       currentQRToken: null,
-      qrExpiresAt: null,
-      qrTimerInterval: null,
       attendanceChart: null,
       qrInstance: null,
       attendanceData: [],
@@ -590,7 +594,6 @@
 
       state.isLoggedIn = false;
       if (state.refreshInterval) clearInterval(state.refreshInterval);
-      if (state.qrTimerInterval) clearInterval(state.qrTimerInterval);
 
       document.getElementById('adminDashboard').classList.add('hidden');
       document.getElementById('loginSection').classList.remove('hidden');
@@ -610,6 +613,7 @@
       refreshAll();
       initializeChart();
       initMap();
+      generateQRCode();
 
       state.refreshInterval = setInterval(() => {
         if (state.isLoggedIn) {
@@ -791,86 +795,39 @@
     // ========================================
 
     function generateQRCode() {
-      showToast('QR 토큰을 서버에서 생성하는 중...', 'info');
+      // 출석 페이지 URL 기반 QR 코드 생성 (회의 종료까지 유지)
+      const attendanceUrl = window.location.href.replace(/\/admin\.html.*$/, '/index.html');
 
-      // 서버에서 QR 토큰 생성 (서버에 등록되어야 검증 가능)
-      const generateFromServer = (typeof google !== 'undefined' && google.script)
-        ? new Promise((resolve, reject) => {
-            google.script.run
-              .withSuccessHandler(resolve)
-              .withFailureHandler(reject)
-              .generateQRToken();
-          })
-        : callGoogleScript('generateQRToken', null);
+      const qrArea = document.getElementById('qrCodeArea');
+      qrArea.innerHTML = '';
 
-      generateFromServer
-        .then(result => {
-          if (!result || !result.success || !result.token) {
-            showToast(result?.error || 'QR 토큰 생성에 실패했습니다.', 'error');
-            return;
-          }
-
-          const token = result.token;
-          state.currentQRToken = token;
-          state.qrExpiresAt = result.expires || (Date.now() + CONFIG.QR_VALIDITY_MINUTES * 60 * 1000);
-
-          // QR 코드 생성 (qrcodejs 라이브러리)
-          const qrArea = document.getElementById('qrCodeArea');
-          qrArea.innerHTML = '';
-
-          try {
-            state.qrInstance = new QRCode(qrArea, {
-              text: token,
-              width: 200,
-              height: 200,
-              colorDark: '#1e1b4b',
-              colorLight: '#ffffff',
-              correctLevel: QRCode.CorrectLevel.M
-            });
-          } catch (error) {
-            console.error('QR 코드 생성 실패:', error);
-            showToast('QR 코드 렌더링에 실패했습니다.', 'error');
-            return;
-          }
-
-          // 토큰 정보 표시
-          document.getElementById('qrTokenInfo').innerHTML = `
-            <p class="text-sm font-mono text-gray-600 dark:text-gray-400 break-all">${token.substring(0, 30)}...</p>
-            <p class="text-xs text-gray-400 mt-1">유효 시간: ${result.validityMinutes || CONFIG.QR_VALIDITY_MINUTES}분</p>
-          `;
-
-          // 타이머 시작
-          startQRTimer();
-
-          showToast('QR 코드가 생성되었습니다!', 'success');
-        })
-        .catch(err => {
-          console.error('QR 토큰 서버 요청 실패:', err);
-          showToast('서버 연결에 실패했습니다. 다시 시도해주세요.', 'error');
+      try {
+        state.qrInstance = new QRCode(qrArea, {
+          text: attendanceUrl,
+          width: 200,
+          height: 200,
+          colorDark: '#1e1b4b',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
         });
-    }
+      } catch (error) {
+        console.error('QR 코드 생성 실패:', error);
+        showToast('QR 코드 생성에 실패했습니다.', 'error');
+        return;
+      }
 
-    function startQRTimer() {
-      document.getElementById('qrTimer').classList.remove('hidden');
+      state.currentQRToken = attendanceUrl;
 
-      if (state.qrTimerInterval) clearInterval(state.qrTimerInterval);
+      const meetingTitle = document.getElementById('meetingTitle')?.value ||
+                           state.settings.meeting_title || '회의';
 
-      state.qrTimerInterval = setInterval(() => {
-        const remaining = state.qrExpiresAt - Date.now();
+      document.getElementById('qrTokenInfo').innerHTML = `
+        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">${meetingTitle}</p>
+        <p class="text-xs text-gray-400 mt-1">이 QR 코드를 스캔하면 출석 페이지로 이동합니다</p>
+        <p class="text-xs text-indigo-500 dark:text-indigo-400 mt-1">새 회의를 시작할 때까지 유지됩니다</p>
+      `;
 
-        if (remaining <= 0) {
-          clearInterval(state.qrTimerInterval);
-          state.currentQRToken = null;
-          document.getElementById('qrTimeRemaining').textContent = '만료됨';
-          document.getElementById('qrTokenInfo').innerHTML = '<p class="text-sm text-red-500">QR 코드가 만료되었습니다. 새로 생성해주세요.</p>';
-          showToast('QR 코드가 만료되었습니다.', 'warning');
-          return;
-        }
-
-        const minutes = Math.floor(remaining / 60000);
-        const seconds = Math.floor((remaining % 60000) / 1000);
-        document.getElementById('qrTimeRemaining').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-      }, 1000);
+      showToast('QR 코드가 생성되었습니다!', 'success');
     }
 
     function downloadQRCode() {
@@ -1051,6 +1008,7 @@
 
         document.getElementById('newMeetingTitle').value = '';
         updateCurrentStatus();
+        generateQRCode();
         setTimeout(refreshAll, 1000);
       } else {
         showToast(result?.error || '새 회의 시작에 실패했습니다.', 'error');
@@ -1095,6 +1053,11 @@
       document.getElementById('meetingTitle').value = settings.meeting_title || '용인대학교 교직원 회의';
       document.getElementById('meetingDescription').value = settings.meeting_description || '출석 정보를 정확히 입력해주세요';
       document.getElementById('notificationEmail').value = settings.notification_email || '';
+
+      const preventProxyEl = document.getElementById('preventProxyAttendance');
+      if (preventProxyEl) {
+        preventProxyEl.checked = settings.prevent_proxy_attendance === true || settings.prevent_proxy_attendance === 'true';
+      }
 
       // 지도가 이미 초기화되어 있으면 업데이트
       if (state.map) {
@@ -1208,7 +1171,8 @@
 
       const settings = {
         ...state.settings,
-        notification_email: document.getElementById('notificationEmail').value
+        notification_email: document.getElementById('notificationEmail').value,
+        prevent_proxy_attendance: document.getElementById('preventProxyAttendance').checked
       };
 
       if (newPassword) {
@@ -1310,6 +1274,19 @@
       const radius = parseInt(s.location_radius) || 1200;
       document.getElementById('statusLatLng').textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
       document.getElementById('statusRadius').textContent = `${radius}m`;
+
+      // 대리 출석 방지 상태
+      const proxyEnabled = s.prevent_proxy_attendance === true || s.prevent_proxy_attendance === 'true';
+      const badge = document.getElementById('statusProxyBadge');
+      if (badge) {
+        if (proxyEnabled) {
+          badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+          badge.textContent = '중복방지 ON';
+        } else {
+          badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400';
+          badge.textContent = '중복방지 OFF';
+        }
+      }
     }
 
     // ========================================
