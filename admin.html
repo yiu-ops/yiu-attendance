@@ -1,691 +1,591 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>용인대학교 교직원 회의 관리</title>
+  <meta name="theme-color" content="#6366f1">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <title>용인대학교 출석 관리</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
+              400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
+              800: '#3730a3', 900: '#312e81'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- QRCode.js -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+  <!-- SheetJS (XLSX) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: "맑은 고딕", "Malgun Gothic", Arial, sans-serif;
-      background: #f8f9fa;
-      color: #212529;
-      line-height: 1.6;
-      padding: 16px;
-      font-size: 18px;
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #6B8DD6 100%);
     }
-
-    .container { max-width: 1000px; margin: 0 auto; }
-
-    .card {
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 32px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      border: 2px solid #dee2e6;
+    .dark .gradient-bg {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e3a5f 100%);
     }
-
-    .header {
-      text-align: center;
-      background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-      color: white;
-      padding: 40px 32px;
-      border-radius: 12px;
-      margin-bottom: 24px;
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
     }
-
-    h1 { font-size: 32px; margin-bottom: 16px; font-weight: bold; }
-    h2 { font-size: 24px; margin-bottom: 20px; color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 8px; font-weight: bold; }
-    h3 { font-size: 20px; margin-bottom: 16px; color: #34495e; font-weight: bold; }
-
-    .btn {
-      display: inline-block;
-      padding: 16px 32px;
-      background: #3498db;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      text-decoration: none;
-      font-size: 18px;
-      font-weight: bold;
-      margin: 8px;
-      transition: all 0.2s ease;
-      font-family: inherit;
-      min-height: 60px;
-      min-width: 120px;
+    .dark .glass-card {
+      background: rgba(30, 41, 59, 0.95);
     }
-
-    .btn:hover:not(:disabled) { background: #2980b9; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-    .btn-success { background: #27ae60; }
-    .btn-success:hover:not(:disabled) { background: #219a52; }
-    .btn-danger { background: #e74c3c; }
-    .btn-danger:hover:not(:disabled) { background: #c0392b; }
-    .btn-warning { background: #f39c12; color: #212529; }
-    .btn-warning:hover:not(:disabled) { background: #e67e22; }
-    .btn-secondary { background: #95a5a6; }
-    .btn-secondary:hover:not(:disabled) { background: #7f8c8d; }
-    .btn:disabled { background: #bdc3c7; cursor: not-allowed; transform: none; box-shadow: none; }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 16px 20px;
-      border: 2px solid #dee2e6;
-      border-radius: 8px;
-      font-size: 18px;
-      margin: 8px 0;
-      font-family: inherit;
-      background: #ffffff;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: #3498db;
-      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-    }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: bold;
-      color: #2c3e50;
-      font-size: 18px;
-    }
-
-    .connection-status {
-      display: inline-block;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: bold;
-      margin: 8px 0;
-    }
-
-    .connection-online {
-      background: #d5f4e6;
-      color: #27ae60;
-      border: 2px solid #27ae60;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-bottom: 24px;
-    }
-
-    .stat-card {
-      background: white;
-      border: 3px solid #3498db;
-      border-radius: 12px;
-      padding: 32px 24px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); border-color: #2980b9; }
-
-    .stat-value {
-      font-size: 48px;
-      font-weight: bold;
-      color: #e74c3c;
-      margin-bottom: 8px;
-      line-height: 1;
-    }
-
-    .stat-label {
-      font-size: 16px;
-      color: #2c3e50;
-      font-weight: bold;
-    }
-
-    .tab-nav {
-      display: flex;
-      background: #ecf0f1;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      overflow: hidden;
-      border: 2px solid #bdc3c7;
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 16px 20px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: inherit;
-      font-size: 16px;
-      font-weight: bold;
-      color: #2c3e50;
-    }
-
-    .tab-btn.active { background: #3498db; color: white; }
-    .tab-btn:hover:not(.active) { background: #d5dbdb; }
-
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 24px;
-    }
-
-    .form-group { margin-bottom: 20px; }
-
-    .form-hint {
-      color: #666;
-      font-size: 14px;
-      margin-top: 4px;
-    }
-
-    .message {
-      padding: 20px 24px;
-      border-radius: 8px;
-      margin: 16px 0;
-      border-left: 6px solid;
-      font-size: 16px;
-      font-weight: bold;
-    }
-
-    .success-message { background: #d5f4e6; color: #27ae60; border-color: #27ae60; }
-    .error-message { background: #fadbd8; color: #e74c3c; border-color: #e74c3c; }
-    .info-message { background: #d6eaf8; color: #3498db; border-color: #3498db; }
-
-    .new-meeting-section {
-      background: linear-gradient(135deg, #e8f5e8, #d5f4e6);
-      padding: 40px 32px;
-      border-radius: 12px;
-      text-align: center;
-      margin: 24px 0;
-      border: 3px solid #27ae60;
-    }
-
-    .new-meeting-title {
-      font-size: 24px;
-      font-weight: bold;
-      margin-bottom: 16px;
-      color: #27ae60;
-    }
-
-    .event-id-display {
-      background: #ffffff;
-      padding: 20px;
-      border-radius: 8px;
-      font-family: "Courier New", monospace;
-      margin: 20px 0;
-      border: 2px solid #dee2e6;
-      word-break: break-all;
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    .recent-attendees {
-      max-height: 600px;
-      overflow-y: auto;
-      border: 2px solid #dee2e6;
-      border-radius: 8px;
-      background: #f8f9fa;
-    }
-
-    .attendee-item {
-      padding: 20px;
-      border-bottom: 1px solid #dee2e6;
-      background: white;
-      margin: 4px;
-      border-radius: 8px;
-      border-left: 6px solid #3498db;
-    }
-
-    .attendee-name {
-      font-weight: bold;
-      color: #2c3e50;
-      font-size: 20px;
-      margin-bottom: 8px;
-    }
-
-    .attendee-info {
-      font-size: 16px;
-      color: #495057;
-      line-height: 1.6;
-    }
-
-    .status-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 16px 0;
-      border-bottom: 1px solid #dee2e6;
-      align-items: center;
-    }
-
-    .status-label {
-      font-weight: bold;
-      color: #2c3e50;
-      font-size: 18px;
-    }
-
-    .status-value {
-      color: #3498db;
-      font-family: "Courier New", monospace;
-      background: #f8f9fa;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-size: 16px;
-      font-weight: bold;
-      border: 1px solid #dee2e6;
-    }
-
-    .notice {
-      background: #fff3cd;
-      color: #856404;
-      padding: 20px 24px;
-      border-radius: 8px;
-      border: 2px solid #ffeaa7;
-      margin-bottom: 24px;
-      font-size: 16px;
-      font-weight: bold;
-    }
-
-    .settings-section {
-      margin-bottom: 32px;
-      padding-bottom: 24px;
-      border-bottom: 2px solid #dee2e6;
-    }
-
-    .settings-section:last-child { border-bottom: none; }
-
     .spinner {
-      border: 6px solid #ecf0f1;
-      border-top: 6px solid #3498db;
+      border: 3px solid rgba(99, 102, 241, 0.2);
+      border-top-color: #6366f1;
       border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
+      animation: spin 0.8s linear infinite;
     }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .loading-text {
-      font-size: 20px;
-      font-weight: bold;
-      color: #34495e;
-    }
-
-    .hidden { display: none; }
-
-    /* 모바일 대응 */
-    @media (max-width: 768px) {
-      body { padding: 12px; font-size: 20px; }
-      .card { padding: 24px; }
-      .stats-grid { grid-template-columns: 1fr; }
-      .form-grid { grid-template-columns: 1fr; }
-      .btn { width: 100%; margin: 8px 0; padding: 20px 16px; font-size: 20px; }
-      h1 { font-size: 28px; }
-      .tab-btn { padding: 12px 8px; font-size: 14px; }
-    }
-
-    .btn:focus, input:focus, select:focus, textarea:focus {
-      outline: 3px solid #f39c12;
-      outline-offset: 2px;
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    .fade-out { opacity: 0; transition: opacity 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .slide-up { animation: slideUp 0.3s ease-out; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
-<body>
-  <div class="container">
+<body class="gradient-bg min-h-screen font-sans antialiased text-gray-900 dark:text-white transition-colors duration-300">
+
+  <!-- 다크모드 토글 -->
+  <button id="darkModeToggle" onclick="toggleDarkMode()" class="fixed top-4 right-4 z-50 p-3 rounded-full glass-card shadow-lg hover:scale-110 transition-transform">
+    <svg id="sunIcon" class="w-6 h-6 text-yellow-500 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+    </svg>
+    <svg id="moonIcon" class="w-6 h-6 text-indigo-600 block dark:hidden" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+    </svg>
+  </button>
+
+  <div class="container mx-auto px-4 py-6 max-w-6xl">
+
     <!-- 로그인 섹션 -->
-    <div id="loginSection" class="card">
-      <div class="header">
-        <h1>용인대학교 교직원 회의 관리</h1>
-        <p class="header-desc">관리자 로그인이 필요합니다</p>
-        <div id="connectionStatus" class="connection-status connection-online">시스템 준비됨</div>
-      </div>
+    <div id="loginSection" class="max-w-md mx-auto fade-in">
+      <div class="glass-card rounded-3xl shadow-2xl p-8">
+        <div class="text-center mb-8">
+          <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">관리자 로그인</h1>
+          <p class="text-gray-500 dark:text-gray-400 mt-2">용인대학교 출석시스템</p>
+        </div>
 
-      <div class="form-group">
-        <label for="adminPassword">관리자 비밀번호</label>
-        <input type="password" id="adminPassword" placeholder="관리자 비밀번호를 입력하세요"
-               onkeypress="if(event.keyCode===13) login()">
-      </div>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">비밀번호</label>
+            <input type="password" id="adminPassword" placeholder="관리자 비밀번호" onkeypress="if(event.key==='Enter') login()"
+              class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:border-indigo-500 focus:outline-none transition-all">
+          </div>
+          <button onclick="login()" class="w-full py-3 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-lg transition-all">
+            로그인
+          </button>
+          <div id="loginMessage" class="text-center"></div>
+        </div>
 
-      <button class="btn btn-success" onclick="login()" id="loginBtn">
-        로그인
-      </button>
-
-      <div id="loginMessage"></div>
-
-      <div class="notice">
-        <strong>안내사항:</strong><br><br>
-        기본 비밀번호: <strong>yongin2024</strong><br>
-        보안 설정에서 비밀번호 변경 가능<br><br>
-        처음 사용하시는 경우 기본 비밀번호로 로그인하세요
+        <div class="mt-6 p-4 bg-amber-50 dark:bg-amber-900/30 rounded-xl border border-amber-200 dark:border-amber-800">
+          <p class="text-sm text-amber-700 dark:text-amber-400">
+            <strong>기본 비밀번호:</strong> yongin2024<br>
+            <span class="text-xs">보안 설정에서 변경 가능</span>
+          </p>
+        </div>
       </div>
     </div>
 
     <!-- 관리자 대시보드 -->
     <div id="adminDashboard" class="hidden">
+
       <!-- 헤더 -->
-      <div class="card">
-        <div class="header">
-          <h1>용인대학교 교직원 회의 관리</h1>
-          <p id="lastUpdated" class="header-desc">시스템 로딩중...</p>
-          <div id="connectionStatusDashboard" class="connection-status connection-online">온라인</div>
-          <div class="header-buttons">
-            <button class="btn btn-success" onclick="refreshAll()">전체 새로고침</button>
-            <button class="btn btn-warning" onclick="openSpreadsheet()">스프레드시트 열기</button>
-            <button class="btn btn-danger" onclick="logout()">로그아웃</button>
+      <div class="glass-card rounded-3xl shadow-2xl p-6 mb-6 fade-in">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">용인대학교 출석 관리</h1>
+            <p id="lastUpdated" class="text-sm text-gray-500 dark:text-gray-400 mt-1">마지막 업데이트: -</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="refreshAll()" class="px-4 py-2 rounded-xl font-medium text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow transition-all">
+              <span class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                새로고침
+              </span>
+            </button>
+            <button onclick="logout()" class="px-4 py-2 rounded-xl font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800 transition-all">
+              로그아웃
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- 실시간 출석 현황 -->
-      <div class="card">
-        <h2>실시간 출석 현황</h2>
+      <!-- 통계 카드 -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="glass-card rounded-2xl p-6 shadow-lg slide-up cursor-pointer hover:scale-105 transition-transform" onclick="refreshStats()">
+          <div class="text-4xl font-bold text-indigo-600 dark:text-indigo-400" id="totalAttendees">-</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">총 출석자</div>
+        </div>
+        <div class="glass-card rounded-2xl p-6 shadow-lg slide-up cursor-pointer hover:scale-105 transition-transform" onclick="refreshStats()">
+          <div class="text-4xl font-bold text-green-600 dark:text-green-400" id="currentEventAttendees">-</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">현재 회의</div>
+        </div>
+        <div class="glass-card rounded-2xl p-6 shadow-lg slide-up cursor-pointer hover:scale-105 transition-transform" onclick="refreshStats()">
+          <div class="text-4xl font-bold text-red-600 dark:text-red-400" id="deviceBlocked">-</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">차단 기록</div>
+        </div>
+        <div class="glass-card rounded-2xl p-6 shadow-lg slide-up cursor-pointer hover:scale-105 transition-transform" onclick="refreshStats()">
+          <div class="text-4xl font-bold text-blue-600 dark:text-blue-400" id="emailsSent">-</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">이메일 발송</div>
+        </div>
+      </div>
 
-        <div class="stats-grid">
-          <div class="stat-card" onclick="refreshStats()">
-            <div class="stat-value" id="totalAttendees">-</div>
-            <div class="stat-label">총 출석자</div>
-          </div>
-          <div class="stat-card" onclick="refreshStats()">
-            <div class="stat-value" id="currentEventAttendees">-</div>
-            <div class="stat-label">현재 회의 출석자</div>
-          </div>
-          <div class="stat-card" onclick="refreshStats()">
-            <div class="stat-value" id="deviceBlocked">-</div>
-            <div class="stat-label">기기 차단</div>
-          </div>
-          <div class="stat-card" onclick="refreshStats()">
-            <div class="stat-value" id="emailsSent">-</div>
-            <div class="stat-label">이메일 발송</div>
+      <!-- 메인 그리드 -->
+      <div class="grid lg:grid-cols-2 gap-6 mb-6">
+
+        <!-- QR 코드 생성 -->
+        <div class="glass-card rounded-3xl shadow-2xl p-6 slide-up">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+            </svg>
+            QR 코드 생성
+          </h2>
+
+          <div class="text-center">
+            <!-- QR 코드 표시 영역 -->
+            <div id="qrCodeContainer" class="bg-white p-6 rounded-2xl inline-block mb-4 shadow-inner">
+              <canvas id="qrCodeCanvas" width="200" height="200"></canvas>
+            </div>
+
+            <!-- 토큰 정보 -->
+            <div id="qrTokenInfo" class="mb-4">
+              <p class="text-sm text-gray-500 dark:text-gray-400">QR 토큰이 생성되지 않았습니다</p>
+            </div>
+
+            <!-- 타이머 -->
+            <div id="qrTimer" class="mb-4 hidden">
+              <div class="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm font-medium">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span id="qrTimeRemaining">15:00</span> 남음
+              </div>
+            </div>
+
+            <div class="flex gap-2 justify-center">
+              <button onclick="generateQRCode()" class="px-6 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-lg transition-all">
+                QR 코드 생성
+              </button>
+              <button onclick="downloadQRCode()" class="px-4 py-3 rounded-xl font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 border border-indigo-200 dark:border-indigo-800 transition-all">
+                다운로드
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- 새 회의 시작 -->
-        <div class="new-meeting-section">
-          <div class="new-meeting-title">새 회의 시작하기</div>
-          <p class="new-meeting-desc">
-            새 회의를 시작하면 모든 기기에서 다시 출석 체크가 가능합니다.
-          </p>
-          <div class="event-id-display">
-            <strong>현재 이벤트 ID:</strong><br>
-            <span id="currentEventId">로딩 중...</span>
+        <!-- 출석 차트 -->
+        <div class="glass-card rounded-3xl shadow-2xl p-6 slide-up">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
+            </svg>
+            출석 통계
+          </h2>
+          <div class="h-64">
+            <canvas id="attendanceChart"></canvas>
           </div>
-          <input type="text" id="newMeetingTitle" placeholder="새 회의 제목 (선택사항)" class="meeting-title-input">
-          <button class="btn btn-success" onclick="startNewMeeting()" id="newMeetingBtn">
-            새 회의 시작하기
+        </div>
+      </div>
+
+      <!-- 새 회의 시작 -->
+      <div class="glass-card rounded-3xl shadow-2xl p-6 mb-6 slide-up bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200 dark:border-green-800">
+        <h2 class="text-xl font-bold text-green-800 dark:text-green-400 mb-4 flex items-center gap-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+          새 회의 시작
+        </h2>
+        <p class="text-green-700 dark:text-green-500 mb-4">새 회의를 시작하면 모든 기기에서 다시 출석 체크가 가능합니다.</p>
+
+        <div class="flex flex-col sm:flex-row gap-4">
+          <div class="flex-1">
+            <input type="text" id="newMeetingTitle" placeholder="새 회의 제목 (선택사항)"
+              class="w-full px-4 py-3 rounded-xl border-2 border-green-200 dark:border-green-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:border-green-500 focus:outline-none transition-all">
+          </div>
+          <button onclick="startNewMeeting()" id="newMeetingBtn" class="px-6 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg transition-all whitespace-nowrap">
+            새 회의 시작
+          </button>
+        </div>
+
+        <div class="mt-4 p-3 bg-white/50 dark:bg-slate-800/50 rounded-xl">
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            <strong>현재 이벤트 ID:</strong> <span id="currentEventId" class="font-mono">-</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- 출석자 목록 & 다운로드 -->
+      <div class="glass-card rounded-3xl shadow-2xl p-6 mb-6 slide-up">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            출석자 목록
+          </h2>
+
+          <!-- 다운로드 버튼 -->
+          <div class="flex gap-2">
+            <button onclick="downloadExcel()" class="px-4 py-2 rounded-xl font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 border border-green-200 dark:border-green-800 transition-all flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              Excel
+            </button>
+            <button onclick="downloadCSV()" class="px-4 py-2 rounded-xl font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 border border-blue-200 dark:border-blue-800 transition-all flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- 탭 -->
+        <div class="flex bg-gray-100 dark:bg-slate-700 rounded-xl p-1 mb-4">
+          <button id="tabRecent" onclick="switchAttendanceTab('recent')" class="flex-1 py-2 px-4 rounded-lg font-medium text-sm bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-sm transition-all">
+            최근 출석자
+          </button>
+          <button id="tabBlocked" onclick="switchAttendanceTab('blocked')" class="flex-1 py-2 px-4 rounded-lg font-medium text-sm text-gray-500 dark:text-gray-400 transition-all">
+            차단 기록
           </button>
         </div>
 
         <!-- 출석자 목록 -->
-        <div class="tab-nav">
-          <button class="tab-btn active" onclick="switchTab('recent')">최근 출석자</button>
-          <button class="tab-btn" onclick="switchTab('blocked')">차단 기록</button>
-        </div>
-
-        <div id="tab-recent" class="tab-content active">
-          <h3>최근 출석자 현황 (현재 회의)</h3>
-          <div class="recent-attendees" id="recentAttendees">
-            <div class="loading-container">
-              <div class="spinner"></div>
-              <div class="loading-text">출석자 정보를 불러오는 중...</div>
-            </div>
+        <div id="recentAttendeesTab" class="max-h-96 overflow-y-auto space-y-3">
+          <div class="text-center py-8 text-gray-400">
+            <div class="spinner w-8 h-8 mx-auto mb-2"></div>
+            출석자 정보를 불러오는 중...
           </div>
         </div>
 
-        <div id="tab-blocked" class="tab-content">
-          <h3>기기 차단 기록</h3>
-          <div class="recent-attendees" id="blockedDevices">
-            <div class="loading-container">
-              <div class="spinner"></div>
-              <div class="loading-text">차단 기록을 불러오는 중...</div>
-            </div>
+        <!-- 차단 목록 -->
+        <div id="blockedTab" class="hidden max-h-96 overflow-y-auto space-y-3">
+          <div class="text-center py-8 text-gray-400">
+            차단 기록이 없습니다
           </div>
         </div>
       </div>
 
-      <!-- 시스템 설정 -->
-      <div class="card">
-        <h2>시스템 설정</h2>
+      <!-- 설정 -->
+      <div class="glass-card rounded-3xl shadow-2xl p-6 slide-up">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          시스템 설정
+        </h2>
 
-        <div class="tab-nav">
-          <button class="tab-btn active" onclick="switchSettingsTab('location')">위치 설정</button>
-          <button class="tab-btn" onclick="switchSettingsTab('meeting')">회의 설정</button>
-          <button class="tab-btn" onclick="switchSettingsTab('security')">보안 설정</button>
+        <!-- 설정 탭 -->
+        <div class="flex bg-gray-100 dark:bg-slate-700 rounded-xl p-1 mb-6">
+          <button id="settingsTabLocation" onclick="switchSettingsTab('location')" class="flex-1 py-2 px-3 rounded-lg font-medium text-sm bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-sm transition-all">
+            위치
+          </button>
+          <button id="settingsTabMeeting" onclick="switchSettingsTab('meeting')" class="flex-1 py-2 px-3 rounded-lg font-medium text-sm text-gray-500 dark:text-gray-400 transition-all">
+            회의
+          </button>
+          <button id="settingsTabSecurity" onclick="switchSettingsTab('security')" class="flex-1 py-2 px-3 rounded-lg font-medium text-sm text-gray-500 dark:text-gray-400 transition-all">
+            보안
+          </button>
         </div>
 
         <!-- 위치 설정 -->
-        <div id="settings-tab-location" class="tab-content active">
-          <div class="settings-section">
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="targetLatitude">회의실 위도</label>
-                <input type="number" id="targetLatitude" step="0.000001" placeholder="37.2420">
-                <p class="form-hint">예: 37.2420 (용인대학교 본관)</p>
-              </div>
-
-              <div class="form-group">
-                <label for="targetLongitude">회의실 경도</label>
-                <input type="number" id="targetLongitude" step="0.000001" placeholder="127.1775">
-                <p class="form-hint">예: 127.1775 (용인대학교 본관)</p>
-              </div>
-
-              <div class="form-group">
-                <label for="locationRadius">허용 반경 (미터)</label>
-                <input type="number" id="locationRadius" min="100" max="5000" placeholder="1200">
-                <p class="form-hint">권장: 실내 1200m, 실외 500m</p>
-              </div>
+        <div id="locationSettings" class="space-y-4">
+          <div class="grid sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">회의실 위도</label>
+              <input type="number" id="targetLatitude" step="0.000001" placeholder="37.2420"
+                class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:border-indigo-500 focus:outline-none transition-all">
             </div>
-
-            <div class="button-group">
-              <button class="btn btn-secondary" onclick="getCurrentLocation()">
-                현재 위치로 설정
-              </button>
-              <button class="btn btn-success" onclick="saveLocationSettings()">
-                위치 설정 저장
-              </button>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">회의실 경도</label>
+              <input type="number" id="targetLongitude" step="0.000001" placeholder="127.1775"
+                class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:border-indigo-500 focus:outline-none transition-all">
             </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">허용 반경 (m)</label>
+              <input type="number" id="locationRadius" min="100" max="5000" placeholder="1200"
+                class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:border-indigo-500 focus:outline-none transition-all">
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="getCurrentLocation()" class="px-4 py-2 rounded-xl font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 border border-indigo-200 dark:border-indigo-800 transition-all">
+              현재 위치 사용
+            </button>
+            <button onclick="saveLocationSettings()" class="px-4 py-2 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow transition-all">
+              저장
+            </button>
           </div>
         </div>
 
         <!-- 회의 설정 -->
-        <div id="settings-tab-meeting" class="tab-content">
-          <div class="settings-section">
-            <div class="form-group">
-              <label for="meetingTitle">회의 제목</label>
-              <input type="text" id="meetingTitle" placeholder="용인대학교 교직원 회의">
-            </div>
-
-            <div class="form-group">
-              <label for="meetingDescription">회의 설명</label>
-              <textarea id="meetingDescription" rows="4" placeholder="출석 정보를 정확히 입력해주세요"></textarea>
-            </div>
-
-            <button class="btn btn-success" onclick="saveMeetingSettings()">회의 설정 저장</button>
+        <div id="meetingSettings" class="hidden space-y-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">회의 제목</label>
+            <input type="text" id="meetingTitle" placeholder="용인대학교 교직원 회의"
+              class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:border-indigo-500 focus:outline-none transition-all">
           </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">회의 설명</label>
+            <textarea id="meetingDescription" rows="3" placeholder="출석 정보를 정확히 입력해주세요"
+              class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:border-indigo-500 focus:outline-none transition-all resize-none"></textarea>
+          </div>
+          <button onclick="saveMeetingSettings()" class="px-4 py-2 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow transition-all">
+            저장
+          </button>
         </div>
 
         <!-- 보안 설정 -->
-        <div id="settings-tab-security" class="tab-content">
-          <div class="settings-section">
-            <div class="form-group">
-              <label for="newAdminPassword">새 관리자 비밀번호</label>
-              <input type="password" id="newAdminPassword" placeholder="새 비밀번호 (6자 이상)">
-            </div>
-
-            <div class="form-group">
-              <label for="confirmPassword">비밀번호 확인</label>
-              <input type="password" id="confirmPassword" placeholder="비밀번호를 다시 입력하세요">
-            </div>
-
-            <div class="form-group">
-              <label for="notificationEmail">알림 이메일</label>
-              <input type="email" id="notificationEmail" placeholder="admin@example.com">
-            </div>
-
-            <button class="btn btn-success" onclick="saveSecuritySettings()">보안 설정 저장</button>
-            <button class="btn btn-warning" onclick="testEmailSystem()">이메일 테스트</button>
+        <div id="securitySettings" class="hidden space-y-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">새 비밀번호</label>
+            <input type="password" id="newAdminPassword" placeholder="새 비밀번호 (6자 이상)"
+              class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:border-indigo-500 focus:outline-none transition-all">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">비밀번호 확인</label>
+            <input type="password" id="confirmPassword" placeholder="비밀번호 다시 입력"
+              class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:border-indigo-500 focus:outline-none transition-all">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">알림 이메일</label>
+            <input type="email" id="notificationEmail" placeholder="admin@example.com"
+              class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:border-indigo-500 focus:outline-none transition-all">
+          </div>
+          <div class="flex gap-2">
+            <button onclick="saveSecuritySettings()" class="px-4 py-2 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow transition-all">
+              저장
+            </button>
+            <button onclick="testEmailSystem()" class="px-4 py-2 rounded-xl font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 border border-amber-200 dark:border-amber-800 transition-all">
+              이메일 테스트
+            </button>
           </div>
         </div>
 
-        <div id="settingsMessage"></div>
-      </div>
-
-      <!-- 시스템 상태 -->
-      <div class="card">
-        <h2>시스템 상태</h2>
-        <div id="systemStatus">
-          <div class="status-item">
-            <div class="status-label">시스템 상태</div>
-            <span class="status-value" id="systemStatusValue">정상</span>
-          </div>
-          <div class="status-item">
-            <div class="status-label">설정된 위치</div>
-            <span class="status-value" id="currentLocation">-</span>
-          </div>
-          <div class="status-item">
-            <div class="status-label">허용 반경</div>
-            <span class="status-value" id="currentRadius">-</span>
-          </div>
-        </div>
+        <div id="settingsMessage" class="mt-4"></div>
       </div>
     </div>
   </div>
 
-  <script>
-    var isLoggedIn = false;
-    var refreshInterval = null;
+  <!-- 토스트 컨테이너 -->
+  <div id="toastContainer" class="fixed top-20 right-4 z-50 space-y-2"></div>
 
-    window.addEventListener('load', function() {
+  <script>
+    // ========================================
+    // 설정 및 상태
+    // ========================================
+
+    const CONFIG = {
+      BACKEND_URL: 'https://script.google.com/macros/s/AKfycbzYDZWn1OzOGiQ8OOeeepVhZjpMMfeoAfZ7AlFXg2w8yQWKSvEw9X7WQXxYaVF5RjTtAA/exec',
+      QR_TOKEN_PREFIX: 'YU_QR_',
+      QR_VALIDITY_MINUTES: 15,
+      REFRESH_INTERVAL: 180000 // 3분
+    };
+
+    let state = {
+      isLoggedIn: false,
+      refreshInterval: null,
+      currentQRToken: null,
+      qrExpiresAt: null,
+      qrTimerInterval: null,
+      attendanceChart: null,
+      attendanceData: [],
+      blockedData: [],
+      settings: {}
+    };
+
+    // ========================================
+    // 초기화
+    // ========================================
+
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeDarkMode();
       document.getElementById('adminPassword').focus();
     });
 
-    function login() {
-      var password = document.getElementById('adminPassword').value.trim();
-      var messageDiv = document.getElementById('loginMessage');
+    function initializeDarkMode() {
+      const isDark = localStorage.getItem('darkMode') === 'true' ||
+                     (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (isDark) document.documentElement.classList.add('dark');
+    }
 
+    function toggleDarkMode() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('darkMode', isDark);
+      if (state.attendanceChart) updateChart();
+    }
+
+    // ========================================
+    // 로그인
+    // ========================================
+
+    function login() {
+      const password = document.getElementById('adminPassword').value.trim();
       if (!password) {
-        showMessage('비밀번호를 입력해주세요.', 'error', messageDiv);
+        showMessage('loginMessage', '비밀번호를 입력해주세요.', 'error');
         return;
       }
 
-      showMessage('로그인 중...', 'info', messageDiv);
+      showMessage('loginMessage', '로그인 중...', 'info');
 
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
+      // Google Apps Script 인증 시도
+      if (typeof google !== 'undefined' && google.script) {
         google.script.run
-          .withSuccessHandler(function(result) {
-            if (result === true) {
-              loginSuccess(messageDiv);
-            } else {
-              loginFailure(messageDiv);
-            }
-          })
-          .withFailureHandler(function(error) {
-            tryFallbackLogin(password, messageDiv);
-          })
+          .withSuccessHandler(result => result ? loginSuccess() : loginFailure())
+          .withFailureHandler(() => tryFallbackLogin(password))
           .authenticateAdmin(password);
       } else {
-        tryFallbackLogin(password, messageDiv);
+        tryFallbackLogin(password);
       }
     }
 
-    function tryFallbackLogin(password, messageDiv) {
-      if (password === 'yongin2024') {
-        loginSuccess(messageDiv, true);
-      } else {
-        showMessage('잘못된 비밀번호입니다. 기본 비밀번호: yongin2024', 'error', messageDiv);
-        document.getElementById('adminPassword').value = '';
-        document.getElementById('adminPassword').focus();
-      }
+    function tryFallbackLogin(password) {
+      // 서버 API를 통해 인증 (변경된 비밀번호 반영)
+      callGoogleScript('authenticateAdmin', { password: password })
+        .then(result => {
+          if (result && result.authenticated) {
+            loginSuccess();
+          } else {
+            loginFailure();
+          }
+        })
+        .catch(() => {
+          // 서버 연결 실패 시 기본 비밀번호로 폴백
+          if (password === 'yongin2024') {
+            loginSuccess();
+          } else {
+            loginFailure();
+          }
+        });
     }
 
-    function loginSuccess(messageDiv, isOffline) {
-      isLoggedIn = true;
-      var message = isOffline ? '로그인 성공! (기본 모드)' : '로그인 성공!';
-      showMessage(message, 'success', messageDiv);
+    function loginSuccess() {
+      state.isLoggedIn = true;
+      showMessage('loginMessage', '로그인 성공!', 'success');
 
-      setTimeout(function() {
+      setTimeout(() => {
         document.getElementById('loginSection').classList.add('hidden');
         document.getElementById('adminDashboard').classList.remove('hidden');
         initializeDashboard();
-      }, 1500);
+      }, 500);
     }
 
-    function loginFailure(messageDiv) {
-      showMessage('잘못된 비밀번호입니다.', 'error', messageDiv);
+    function loginFailure() {
+      showMessage('loginMessage', '잘못된 비밀번호입니다.', 'error');
       document.getElementById('adminPassword').value = '';
       document.getElementById('adminPassword').focus();
     }
+
+    function logout() {
+      if (!confirm('로그아웃 하시겠습니까?')) return;
+
+      state.isLoggedIn = false;
+      if (state.refreshInterval) clearInterval(state.refreshInterval);
+      if (state.qrTimerInterval) clearInterval(state.qrTimerInterval);
+
+      document.getElementById('adminDashboard').classList.add('hidden');
+      document.getElementById('loginSection').classList.remove('hidden');
+      document.getElementById('adminPassword').value = '';
+      document.getElementById('loginMessage').innerHTML = '';
+
+      setTimeout(() => document.getElementById('adminPassword').focus(), 300);
+    }
+
+    // ========================================
+    // 대시보드 초기화
+    // ========================================
 
     function initializeDashboard() {
       updateLastUpdated();
       loadCurrentSettings();
       refreshAll();
+      initializeChart();
 
-      refreshInterval = setInterval(function() {
-        if (isLoggedIn) {
+      state.refreshInterval = setInterval(() => {
+        if (state.isLoggedIn) {
           refreshStats();
           updateLastUpdated();
         }
-      }, 180000);
+      }, CONFIG.REFRESH_INTERVAL);
     }
 
     function updateLastUpdated() {
-      var now = new Date();
-      document.getElementById('lastUpdated').textContent = '마지막 업데이트: ' + now.toLocaleString();
+      document.getElementById('lastUpdated').textContent = '마지막 업데이트: ' + new Date().toLocaleString();
     }
 
     function refreshAll() {
-      if (!isLoggedIn) return;
+      if (!state.isLoggedIn) return;
       refreshStats();
       refreshSystemStatus();
       updateLastUpdated();
     }
 
-    function refreshStats() {
-      if (!isLoggedIn) return;
+    // ========================================
+    // 통계 조회
+    // ========================================
 
-      try {
+    function refreshStats() {
+      if (!state.isLoggedIn) return;
+
+      if (typeof google !== 'undefined' && google.script) {
         google.script.run
-          .withSuccessHandler(function(result) {
-            if (result && result.success && result.stats) {
-              updateStatsDisplay(result.stats);
-              updateRecentAttendees(result.stats.recentAttendees || []);
-              updateBlockedDevices(result.stats.blockedDevices || []);
-            } else {
-              setDefaultStats();
-            }
-          })
-          .withFailureHandler(function(error) {
-            setDefaultStats();
-          })
+          .withSuccessHandler(handleStatsResult)
+          .withFailureHandler(() => setDefaultStats())
           .getAttendanceStats();
-      } catch (error) {
-        setDefaultStats();
+      } else {
+        // JSONP fallback
+        callGoogleScript('getAttendanceStats', null)
+          .then(handleStatsResult)
+          .catch(() => setDefaultStats());
       }
     }
 
-    function refreshSystemStatus() {
-      try {
-        google.script.run
-          .withSuccessHandler(function(result) {
-            if (result && result.success) {
-              document.getElementById('currentEventId').textContent = result.currentEventId || 'N/A';
-            }
-          })
-          .withFailureHandler(function(error) {
-            document.getElementById('currentEventId').textContent = 'N/A';
-          })
-          .getSystemStatus();
-      } catch (error) {
-        document.getElementById('currentEventId').textContent = 'N/A';
+    function handleStatsResult(result) {
+      if (result && result.success && result.stats) {
+        updateStatsDisplay(result.stats);
+        state.attendanceData = result.stats.recentAttendees || [];
+        state.blockedData = result.stats.blockedDevices || [];
+        updateRecentAttendees(state.attendanceData);
+        updateBlockedDevices(state.blockedData);
+        updateChart();
+      } else {
+        setDefaultStats();
       }
     }
 
@@ -701,118 +601,393 @@
       document.getElementById('currentEventAttendees').textContent = '-';
       document.getElementById('deviceBlocked').textContent = '-';
       document.getElementById('emailsSent').textContent = '-';
-
-      document.getElementById('recentAttendees').innerHTML =
-        '<div class="empty-state"><div class="empty-icon">📋</div><div>출석자 정보가 없습니다.</div></div>';
-
-      document.getElementById('blockedDevices').innerHTML =
-        '<div class="empty-state"><div class="empty-icon">🚫</div><div>차단 기록이 없습니다.</div></div>';
     }
+
+    function refreshSystemStatus() {
+      if (typeof google !== 'undefined' && google.script) {
+        google.script.run
+          .withSuccessHandler(result => {
+            if (result && result.success) {
+              document.getElementById('currentEventId').textContent = result.currentEventId || 'N/A';
+            }
+          })
+          .withFailureHandler(() => {})
+          .getSystemStatus();
+      } else {
+        callGoogleScript('getSystemStatus', null)
+          .then(result => {
+            if (result && result.success) {
+              document.getElementById('currentEventId').textContent = result.currentEventId || 'N/A';
+            }
+          })
+          .catch(() => {});
+      }
+    }
+
+    // ========================================
+    // 출석자 목록
+    // ========================================
 
     function updateRecentAttendees(attendees) {
-      var container = document.getElementById('recentAttendees');
+      const container = document.getElementById('recentAttendeesTab');
 
       if (!attendees || attendees.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>아직 출석자가 없습니다.</div></div>';
+        container.innerHTML = `
+          <div class="text-center py-8 text-gray-400">
+            <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            아직 출석자가 없습니다
+          </div>
+        `;
         return;
       }
 
-      var html = '';
-      for (var i = 0; i < attendees.length; i++) {
-        var attendee = attendees[i];
-        html += '<div class="attendee-item">';
-        html += '<div class="attendee-name">' + (i + 1) + '. ' + (attendee.name || '이름 없음') + '</div>';
-        html += '<div class="attendee-info">';
-        html += '소속: ' + (attendee.department || '소속 없음') + '<br>';
-        html += '이메일: ' + (attendee.email || '(미입력)') + '<br>';
-        html += '시간: ' + (attendee.time || '시간 정보 없음') + '<br>';
-        html += '거리: ' + (attendee.distance || 'N/A') + 'm';
-        html += '</div></div>';
-      }
-
-      container.innerHTML = html;
+      container.innerHTML = attendees.map((a, i) => `
+        <div class="p-4 bg-gray-50 dark:bg-slate-700/50 rounded-xl border-l-4 border-indigo-500">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="font-bold text-gray-900 dark:text-white">${i + 1}. ${a.name || '이름 없음'}</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                ${a.department || '소속 없음'} · ${a.email || '(이메일 없음)'}
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs text-gray-400">${a.time || ''}</div>
+              <div class="text-xs text-indigo-600 dark:text-indigo-400">${a.distance ? a.distance + 'm' : ''}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
     }
 
-    function updateBlockedDevices(blockedDevices) {
-      var container = document.getElementById('blockedDevices');
+    function updateBlockedDevices(blocked) {
+      const container = document.getElementById('blockedTab');
 
-      if (!blockedDevices || blockedDevices.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-icon">🚫</div><div>차단 기록이 없습니다.</div></div>';
+      if (!blocked || blocked.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-gray-400">
+            <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+            </svg>
+            차단 기록이 없습니다
+          </div>
+        `;
         return;
       }
 
-      var html = '';
-      for (var i = 0; i < blockedDevices.length; i++) {
-        var blocked = blockedDevices[i];
-        html += '<div class="attendee-item blocked">';
-        html += '<div class="attendee-name blocked-name">' + (i + 1) + '. ' + (blocked.name || '이름 없음') + ' (차단됨)</div>';
-        html += '<div class="attendee-info">';
-        html += '소속: ' + (blocked.department || '소속 없음') + '<br>';
-        html += '시간: ' + (blocked.time || '시간 정보 없음') + '<br>';
-        html += '사유: ' + (blocked.reason || 'N/A');
-        html += '</div></div>';
+      container.innerHTML = blocked.map((b, i) => `
+        <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border-l-4 border-red-500">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="font-bold text-red-800 dark:text-red-400">${i + 1}. ${b.name || '이름 없음'}</div>
+              <div class="text-sm text-red-600 dark:text-red-500 mt-1">
+                ${b.department || '소속 없음'} · ${b.reason || ''}
+              </div>
+            </div>
+            <div class="text-xs text-gray-400">${b.time || ''}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function switchAttendanceTab(tab) {
+      const recentBtn = document.getElementById('tabRecent');
+      const blockedBtn = document.getElementById('tabBlocked');
+      const recentTab = document.getElementById('recentAttendeesTab');
+      const blockedTab = document.getElementById('blockedTab');
+
+      if (tab === 'recent') {
+        recentBtn.className = 'flex-1 py-2 px-4 rounded-lg font-medium text-sm bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-sm transition-all';
+        blockedBtn.className = 'flex-1 py-2 px-4 rounded-lg font-medium text-sm text-gray-500 dark:text-gray-400 transition-all';
+        recentTab.classList.remove('hidden');
+        blockedTab.classList.add('hidden');
+      } else {
+        blockedBtn.className = 'flex-1 py-2 px-4 rounded-lg font-medium text-sm bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-sm transition-all';
+        recentBtn.className = 'flex-1 py-2 px-4 rounded-lg font-medium text-sm text-gray-500 dark:text-gray-400 transition-all';
+        blockedTab.classList.remove('hidden');
+        recentTab.classList.add('hidden');
+      }
+    }
+
+    // ========================================
+    // QR 코드 생성
+    // ========================================
+
+    function generateQRCode() {
+      showToast('QR 토큰을 서버에서 생성하는 중...', 'info');
+
+      // 서버에서 QR 토큰 생성 (서버에 등록되어야 검증 가능)
+      const generateFromServer = (typeof google !== 'undefined' && google.script)
+        ? new Promise((resolve, reject) => {
+            google.script.run
+              .withSuccessHandler(resolve)
+              .withFailureHandler(reject)
+              .generateQRToken();
+          })
+        : callGoogleScript('generateQRToken', null);
+
+      generateFromServer
+        .then(result => {
+          if (!result || !result.success || !result.token) {
+            showToast(result?.error || 'QR 토큰 생성에 실패했습니다.', 'error');
+            return;
+          }
+
+          const token = result.token;
+          state.currentQRToken = token;
+          state.qrExpiresAt = result.expires || (Date.now() + CONFIG.QR_VALIDITY_MINUTES * 60 * 1000);
+
+          // QR 코드 생성
+          const canvas = document.getElementById('qrCodeCanvas');
+
+          QRCode.toCanvas(canvas, token, {
+            width: 200,
+            margin: 2,
+            color: {
+              dark: '#1e1b4b',
+              light: '#ffffff'
+            }
+          }, function(error) {
+            if (error) {
+              console.error('QR 코드 생성 실패:', error);
+              showToast('QR 코드 렌더링에 실패했습니다.', 'error');
+              return;
+            }
+
+            // 토큰 정보 표시
+            document.getElementById('qrTokenInfo').innerHTML = `
+              <p class="text-sm font-mono text-gray-600 dark:text-gray-400 break-all">${token.substring(0, 30)}...</p>
+              <p class="text-xs text-gray-400 mt-1">유효 시간: ${result.validityMinutes || CONFIG.QR_VALIDITY_MINUTES}분</p>
+            `;
+
+            // 타이머 시작
+            startQRTimer();
+
+            showToast('QR 코드가 생성되었습니다!', 'success');
+          });
+        })
+        .catch(err => {
+          console.error('QR 토큰 서버 요청 실패:', err);
+          showToast('서버 연결에 실패했습니다. 다시 시도해주세요.', 'error');
+        });
+    }
+
+    function startQRTimer() {
+      document.getElementById('qrTimer').classList.remove('hidden');
+
+      if (state.qrTimerInterval) clearInterval(state.qrTimerInterval);
+
+      state.qrTimerInterval = setInterval(() => {
+        const remaining = state.qrExpiresAt - Date.now();
+
+        if (remaining <= 0) {
+          clearInterval(state.qrTimerInterval);
+          state.currentQRToken = null;
+          document.getElementById('qrTimeRemaining').textContent = '만료됨';
+          document.getElementById('qrTokenInfo').innerHTML = '<p class="text-sm text-red-500">QR 코드가 만료되었습니다. 새로 생성해주세요.</p>';
+          showToast('QR 코드가 만료되었습니다.', 'warning');
+          return;
+        }
+
+        const minutes = Math.floor(remaining / 60000);
+        const seconds = Math.floor((remaining % 60000) / 1000);
+        document.getElementById('qrTimeRemaining').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      }, 1000);
+    }
+
+    function downloadQRCode() {
+      if (!state.currentQRToken) {
+        showToast('먼저 QR 코드를 생성해주세요.', 'warning');
+        return;
       }
 
-      container.innerHTML = html;
+      const canvas = document.getElementById('qrCodeCanvas');
+      const link = document.createElement('a');
+      link.download = `yiu-attendance-qr-${Date.now()}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+
+      showToast('QR 코드가 다운로드되었습니다.', 'success');
     }
+
+    // ========================================
+    // 차트
+    // ========================================
+
+    function initializeChart() {
+      const ctx = document.getElementById('attendanceChart').getContext('2d');
+      const isDark = document.documentElement.classList.contains('dark');
+
+      state.attendanceChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['현재 회의 출석', '이전 출석', '차단'],
+          datasets: [{
+            data: [0, 0, 0],
+            backgroundColor: ['#10b981', '#6366f1', '#ef4444'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: isDark ? '#e5e7eb' : '#374151',
+                font: { size: 12 }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateChart() {
+      if (!state.attendanceChart) return;
+
+      const isDark = document.documentElement.classList.contains('dark');
+      const currentAttendees = parseInt(document.getElementById('currentEventAttendees').textContent) || 0;
+      const totalAttendees = parseInt(document.getElementById('totalAttendees').textContent) || 0;
+      const blocked = parseInt(document.getElementById('deviceBlocked').textContent) || 0;
+
+      state.attendanceChart.data.datasets[0].data = [
+        currentAttendees,
+        Math.max(0, totalAttendees - currentAttendees),
+        blocked
+      ];
+
+      state.attendanceChart.options.plugins.legend.labels.color = isDark ? '#e5e7eb' : '#374151';
+      state.attendanceChart.update();
+    }
+
+    // ========================================
+    // 다운로드 기능
+    // ========================================
+
+    function downloadExcel() {
+      if (state.attendanceData.length === 0) {
+        showToast('다운로드할 데이터가 없습니다.', 'warning');
+        return;
+      }
+
+      const data = state.attendanceData.map((a, i) => ({
+        '번호': i + 1,
+        '성명': a.name || '',
+        '소속': a.department || '',
+        '이메일': a.email || '',
+        '출석시간': a.time || '',
+        '거리(m)': a.distance || ''
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '출석자목록');
+
+      XLSX.writeFile(wb, `출석자목록_${new Date().toISOString().split('T')[0]}.xlsx`);
+      showToast('Excel 파일이 다운로드되었습니다.', 'success');
+    }
+
+    function downloadCSV() {
+      if (state.attendanceData.length === 0) {
+        showToast('다운로드할 데이터가 없습니다.', 'warning');
+        return;
+      }
+
+      const headers = ['번호', '성명', '소속', '이메일', '출석시간', '거리(m)'];
+      const rows = state.attendanceData.map((a, i) => [
+        i + 1,
+        a.name || '',
+        a.department || '',
+        a.email || '',
+        a.time || '',
+        a.distance || ''
+      ]);
+
+      const csv = [headers, ...rows].map(row =>
+        row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+      ).join('\n');
+
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `출석자목록_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+
+      showToast('CSV 파일이 다운로드되었습니다.', 'success');
+    }
+
+    // ========================================
+    // 새 회의 시작
+    // ========================================
 
     function startNewMeeting() {
-      var title = document.getElementById('newMeetingTitle').value.trim();
+      const title = document.getElementById('newMeetingTitle').value.trim();
 
       if (!confirm('새 회의를 시작하시겠습니까?\n\n모든 기기에서 다시 출석 체크가 가능합니다.')) {
         return;
       }
 
-      var button = document.getElementById('newMeetingBtn');
-      var originalText = button.textContent;
-      button.disabled = true;
-      button.textContent = '시작 중입니다...';
+      const btn = document.getElementById('newMeetingBtn');
+      btn.disabled = true;
+      btn.textContent = '시작 중...';
 
-      try {
+      if (typeof google !== 'undefined' && google.script) {
         google.script.run
-          .withSuccessHandler(function(result) {
-            button.disabled = false;
-            button.textContent = originalText;
-
-            if (result && result.success) {
-              alert('새 회의가 시작되었습니다!\n\n이벤트 ID: ' + (result.eventId || '생성됨'));
-              document.getElementById('currentEventId').textContent = result.eventId || '생성됨';
-              document.getElementById('newMeetingTitle').value = '';
-              setTimeout(refreshAll, 2000);
-            } else {
-              alert('새 회의 시작에 실패했습니다.\n\n오류: ' + (result.error || result.message || '알 수 없는 오류'));
-            }
-          })
-          .withFailureHandler(function(error) {
-            button.disabled = false;
-            button.textContent = originalText;
-            alert('새 회의 시작 중 오류가 발생했습니다.\n\n오류: ' + error.message);
-          })
+          .withSuccessHandler(handleNewMeetingResult)
+          .withFailureHandler(err => handleNewMeetingError(err))
           .startNewMeetingFixed(title);
-      } catch (error) {
-        button.disabled = false;
-        button.textContent = originalText;
-        alert('시스템 오류가 발생했습니다.\n페이지를 새로고침하고 다시 시도하세요.');
+      } else {
+        callGoogleScript('startNewMeeting', { meetingTitle: title })
+          .then(handleNewMeetingResult)
+          .catch(handleNewMeetingError);
       }
     }
 
+    function handleNewMeetingResult(result) {
+      const btn = document.getElementById('newMeetingBtn');
+      btn.disabled = false;
+      btn.textContent = '새 회의 시작';
+
+      if (result && result.success) {
+        showToast('새 회의가 시작되었습니다!', 'success');
+        document.getElementById('currentEventId').textContent = result.eventId || '생성됨';
+        document.getElementById('newMeetingTitle').value = '';
+        setTimeout(refreshAll, 1000);
+      } else {
+        showToast(result?.error || '새 회의 시작에 실패했습니다.', 'error');
+      }
+    }
+
+    function handleNewMeetingError(err) {
+      const btn = document.getElementById('newMeetingBtn');
+      btn.disabled = false;
+      btn.textContent = '새 회의 시작';
+      showToast('새 회의 시작 중 오류가 발생했습니다.', 'error');
+    }
+
+    // ========================================
+    // 설정
+    // ========================================
+
     function loadCurrentSettings() {
-      try {
+      if (typeof google !== 'undefined' && google.script) {
         google.script.run
-          .withSuccessHandler(function(settings) {
-            updateSettingsUI(settings);
-          })
-          .withFailureHandler(function(error) {
-            updateSettingsUI({});
-          })
+          .withSuccessHandler(updateSettingsUI)
+          .withFailureHandler(() => updateSettingsUI({}))
           .getSettings();
-      } catch (error) {
-        updateSettingsUI({});
+      } else {
+        callGoogleScript('getSettings', null)
+          .then(updateSettingsUI)
+          .catch(() => updateSettingsUI({}));
       }
     }
 
     function updateSettingsUI(settings) {
       settings = settings || {};
+      state.settings = settings;
 
       document.getElementById('targetLatitude').value = settings.target_latitude || '37.2420';
       document.getElementById('targetLongitude').value = settings.target_longitude || '127.1775';
@@ -820,9 +995,22 @@
       document.getElementById('meetingTitle').value = settings.meeting_title || '용인대학교 교직원 회의';
       document.getElementById('meetingDescription').value = settings.meeting_description || '출석 정보를 정확히 입력해주세요';
       document.getElementById('notificationEmail').value = settings.notification_email || '';
+    }
 
-      document.getElementById('currentLocation').textContent = (settings.target_latitude || '37.2420') + ', ' + (settings.target_longitude || '127.1775');
-      document.getElementById('currentRadius').textContent = (settings.location_radius || '1200') + 'm';
+    function switchSettingsTab(tab) {
+      const tabs = ['location', 'meeting', 'security'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`settingsTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const content = document.getElementById(`${t}Settings`);
+
+        if (t === tab) {
+          btn.className = 'flex-1 py-2 px-3 rounded-lg font-medium text-sm bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-sm transition-all';
+          content.classList.remove('hidden');
+        } else {
+          btn.className = 'flex-1 py-2 px-3 rounded-lg font-medium text-sm text-gray-500 dark:text-gray-400 transition-all';
+          content.classList.add('hidden');
+        }
+      });
     }
 
     function getCurrentLocation() {
@@ -834,54 +1022,29 @@
       showSettingsMessage('현재 위치 확인 중...', 'info');
 
       navigator.geolocation.getCurrentPosition(
-        function(position) {
-          var lat = position.coords.latitude;
-          var lng = position.coords.longitude;
-          var accuracy = position.coords.accuracy;
+        position => {
+          document.getElementById('targetLatitude').value = position.coords.latitude.toFixed(6);
+          document.getElementById('targetLongitude').value = position.coords.longitude.toFixed(6);
 
-          document.getElementById('targetLatitude').value = lat.toFixed(6);
-          document.getElementById('targetLongitude').value = lng.toFixed(6);
+          const accuracy = position.coords.accuracy;
+          let radius = 1200;
+          if (accuracy > 500) radius = 2000;
+          else if (accuracy > 200) radius = 1500;
+          else if (accuracy > 100) radius = 1000;
 
-          var recommendedRadius = 1200;
-          if (accuracy > 500) {
-            recommendedRadius = 2000;
-          } else if (accuracy > 200) {
-            recommendedRadius = 1500;
-          } else if (accuracy > 100) {
-            recommendedRadius = 1000;
-          }
-
-          document.getElementById('locationRadius').value = recommendedRadius;
-
-          showSettingsMessage('현재 위치가 설정되었습니다!\n위도: ' + lat.toFixed(6) + '\n경도: ' + lng.toFixed(6) + '\nGPS 정확도: ' + Math.round(accuracy) + 'm\n권장 반경: ' + recommendedRadius + 'm', 'success');
+          document.getElementById('locationRadius').value = radius;
+          showSettingsMessage(`위치 설정 완료! (정확도: ${Math.round(accuracy)}m)`, 'success');
         },
-        function(error) {
-          var errorMessage = '위치 확인에 실패했습니다.';
-
-          switch(error.code) {
-            case error.PERMISSION_DENIED:
-              errorMessage = '위치 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해주세요.';
-              break;
-            case error.POSITION_UNAVAILABLE:
-              errorMessage = '위치 정보를 사용할 수 없습니다. 창가로 이동하거나 WiFi를 연결해보세요.';
-              break;
-            case error.TIMEOUT:
-              errorMessage = '위치 확인 시간이 초과되었습니다. 다시 시도해보세요.';
-              break;
-          }
-
-          showSettingsMessage(errorMessage, 'error');
+        error => {
+          showSettingsMessage('위치 확인에 실패했습니다.', 'error');
         },
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 60000
-        }
+        { enableHighAccuracy: true, timeout: 15000 }
       );
     }
 
     function saveLocationSettings() {
-      var settings = {
+      const settings = {
+        ...state.settings,
         target_latitude: document.getElementById('targetLatitude').value,
         target_longitude: document.getElementById('targetLongitude').value,
         location_radius: document.getElementById('locationRadius').value
@@ -890,7 +1053,8 @@
     }
 
     function saveMeetingSettings() {
-      var settings = {
+      const settings = {
+        ...state.settings,
         meeting_title: document.getElementById('meetingTitle').value,
         meeting_description: document.getElementById('meetingDescription').value
       };
@@ -898,11 +1062,11 @@
     }
 
     function saveSecuritySettings() {
-      var newPassword = document.getElementById('newAdminPassword').value;
-      var confirmPassword = document.getElementById('confirmPassword').value;
+      const newPassword = document.getElementById('newAdminPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
 
       if (newPassword && newPassword !== confirmPassword) {
-        showSettingsMessage('비밀번호 확인이 일치하지 않습니다.', 'error');
+        showSettingsMessage('비밀번호가 일치하지 않습니다.', 'error');
         return;
       }
 
@@ -911,7 +1075,8 @@
         return;
       }
 
-      var settings = {
+      const settings = {
+        ...state.settings,
         notification_email: document.getElementById('notificationEmail').value
       };
 
@@ -920,183 +1085,172 @@
       }
 
       saveSettings(settings);
+
+      // 비밀번호 필드 초기화
+      document.getElementById('newAdminPassword').value = '';
+      document.getElementById('confirmPassword').value = '';
     }
 
-    function saveSettings(newSettings) {
-      showSettingsMessage('설정 저장 중...', 'info');
+    function saveSettings(settings) {
+      showSettingsMessage('저장 중...', 'info');
 
-      try {
+      if (typeof google !== 'undefined' && google.script) {
         google.script.run
-          .withSuccessHandler(function(currentSettings) {
-            var updatedSettings = Object.assign({}, currentSettings, newSettings);
-
-            google.script.run
-              .withSuccessHandler(function(result) {
-                if (result && result.success) {
-                  showSettingsMessage('설정이 저장되었습니다!', 'success');
-                  updateSettingsUI(updatedSettings);
-                  setTimeout(refreshAll, 1000);
-                } else {
-                  showSettingsMessage('설정 저장에 실패했습니다.', 'error');
-                }
-              })
-              .withFailureHandler(function(error) {
-                showSettingsMessage('설정 저장 중 오류가 발생했습니다.', 'error');
-              })
-              .saveSettings(updatedSettings);
+          .withSuccessHandler(result => {
+            if (result && result.success) {
+              state.settings = settings;
+              showSettingsMessage('설정이 저장되었습니다!', 'success');
+            } else {
+              showSettingsMessage('설정 저장에 실패했습니다.', 'error');
+            }
           })
-          .withFailureHandler(function(error) {
-            showSettingsMessage('설정 로드에 실패했습니다.', 'error');
+          .withFailureHandler(() => showSettingsMessage('설정 저장 중 오류가 발생했습니다.', 'error'))
+          .saveSettings(settings);
+      } else {
+        callGoogleScript('saveSettings', { settings })
+          .then(result => {
+            if (result && result.success) {
+              state.settings = settings;
+              showSettingsMessage('설정이 저장되었습니다!', 'success');
+            } else {
+              showSettingsMessage('설정 저장에 실패했습니다.', 'error');
+            }
           })
-          .getSettings();
-      } catch (error) {
-        showSettingsMessage('설정 저장 중 오류가 발생했습니다.', 'error');
+          .catch(() => showSettingsMessage('설정 저장 중 오류가 발생했습니다.', 'error'));
       }
     }
 
     function testEmailSystem() {
-      showSettingsMessage('이메일 테스트 발송 중...', 'info');
+      showSettingsMessage('테스트 이메일 발송 중...', 'info');
 
-      try {
+      if (typeof google !== 'undefined' && google.script) {
         google.script.run
-          .withSuccessHandler(function(result) {
+          .withSuccessHandler(result => {
             if (result && result.success) {
               showSettingsMessage('테스트 이메일이 발송되었습니다!', 'success');
             } else {
-              showSettingsMessage(result.error || '이메일 테스트에 실패했습니다.', 'error');
+              showSettingsMessage(result?.error || '이메일 테스트에 실패했습니다.', 'error');
             }
           })
-          .withFailureHandler(function(error) {
-            showSettingsMessage('이메일 테스트 중 오류가 발생했습니다.', 'error');
-          })
+          .withFailureHandler(() => showSettingsMessage('이메일 테스트 중 오류가 발생했습니다.', 'error'))
           .testEmailSystem();
-      } catch (error) {
-        showSettingsMessage('이메일 테스트 호출에 실패했습니다.', 'error');
-      }
-    }
-
-    function logout() {
-      if (confirm('로그아웃 하시겠습니까?')) {
-        isLoggedIn = false;
-
-        if (refreshInterval) {
-          clearInterval(refreshInterval);
-          refreshInterval = null;
-        }
-
-        document.getElementById('adminDashboard').classList.add('hidden');
-        document.getElementById('loginSection').classList.remove('hidden');
-        document.getElementById('adminPassword').value = '';
-        document.getElementById('loginMessage').innerHTML = '';
-
-        setTimeout(function() {
-          document.getElementById('adminPassword').focus();
-        }, 300);
-      }
-    }
-
-    function switchTab(tabName) {
-      var tabs = document.querySelectorAll('[id^="tab-"]');
-      for (var i = 0; i < tabs.length; i++) {
-        tabs[i].classList.remove('active');
-      }
-
-      var buttons = document.querySelectorAll('.tab-nav .tab-btn');
-      for (var i = 0; i < buttons.length; i++) {
-        if (buttons[i].onclick && buttons[i].onclick.toString().indexOf('switchSettingsTab') === -1) {
-          buttons[i].classList.remove('active');
-        }
-      }
-
-      if (event && event.target) {
-        event.target.classList.add('active');
-      }
-
-      var activeTab = document.getElementById('tab-' + tabName);
-      if (activeTab) {
-        activeTab.classList.add('active');
-      }
-    }
-
-    function switchSettingsTab(tabName) {
-      var tabs = document.querySelectorAll('[id^="settings-tab-"]');
-      for (var i = 0; i < tabs.length; i++) {
-        tabs[i].classList.remove('active');
-      }
-
-      var buttons = document.querySelectorAll('.tab-nav .tab-btn');
-      for (var i = 0; i < buttons.length; i++) {
-        if (buttons[i].onclick && buttons[i].onclick.toString().indexOf('switchSettingsTab') > -1) {
-          buttons[i].classList.remove('active');
-        }
-      }
-
-      if (event && event.target) {
-        event.target.classList.add('active');
-      }
-
-      var activeTab = document.getElementById('settings-tab-' + tabName);
-      if (activeTab) {
-        activeTab.classList.add('active');
-      }
-    }
-
-    function showMessage(message, type, container) {
-      var className = 'info-message';
-      if (type === 'success') className = 'success-message';
-      else if (type === 'error') className = 'error-message';
-
-      container.innerHTML = '<div class="message ' + className + '">' + message.replace(/\n/g, '<br>') + '</div>';
-
-      if (type === 'success') {
-        setTimeout(function() {
-          container.innerHTML = '';
-        }, 4000);
+      } else {
+        callGoogleScript('testEmailSystem', null)
+          .then(result => {
+            if (result && result.success) {
+              showSettingsMessage('테스트 이메일이 발송되었습니다!', 'success');
+            } else {
+              showSettingsMessage(result?.error || '이메일 테스트에 실패했습니다.', 'error');
+            }
+          })
+          .catch(() => showSettingsMessage('이메일 테스트 중 오류가 발생했습니다.', 'error'));
       }
     }
 
     function showSettingsMessage(message, type) {
-      var container = document.getElementById('settingsMessage');
-      showMessage(message, type, container);
+      showMessage('settingsMessage', message, type);
     }
 
-    function openSpreadsheet() {
-      try {
-        google.script.run
-          .withSuccessHandler(function(result) {
-            if (result && result.spreadsheetUrl) {
-              window.open(result.spreadsheetUrl, '_blank');
-            } else {
-              alert('스프레드시트 URL을 찾을 수 없습니다.');
-            }
-          })
-          .withFailureHandler(function(error) {
-            alert('스프레드시트 열기에 실패했습니다.');
-          })
-          .getSystemStatus();
-      } catch (error) {
-        alert('시스템 상태 확인에 실패했습니다.');
+    // ========================================
+    // Google Apps Script 통신 (JSONP)
+    // ========================================
+
+    function callGoogleScript(method, params) {
+      return new Promise((resolve, reject) => {
+        const callbackName = `gasCallback_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
+        const timeoutId = setTimeout(() => {
+          cleanup();
+          reject(new Error('요청 시간 초과'));
+        }, 30000);
+
+        function cleanup() {
+          clearTimeout(timeoutId);
+          delete window[callbackName];
+          const script = document.getElementById(callbackName);
+          if (script) script.remove();
+        }
+
+        window[callbackName] = result => {
+          cleanup();
+          resolve(result);
+        };
+
+        const script = document.createElement('script');
+        script.id = callbackName;
+        script.onerror = () => {
+          cleanup();
+          reject(new Error('네트워크 오류'));
+        };
+
+        let url = `${CONFIG.BACKEND_URL}?method=${encodeURIComponent(method)}&callback=${callbackName}`;
+        if (params) {
+          url += `&params=${encodeURIComponent(JSON.stringify(params))}`;
+        }
+
+        script.src = url;
+        document.head.appendChild(script);
+      });
+    }
+
+    // ========================================
+    // UI 헬퍼
+    // ========================================
+
+    function showMessage(containerId, message, type) {
+      const container = document.getElementById(containerId);
+      const colors = {
+        success: 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800',
+        error: 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800',
+        info: 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800'
+      };
+
+      container.innerHTML = `
+        <div class="p-3 rounded-xl border ${colors[type]} text-sm font-medium fade-in">
+          ${message}
+        </div>
+      `;
+
+      if (type === 'success') {
+        setTimeout(() => container.innerHTML = '', 3000);
       }
     }
 
-    window.addEventListener('beforeunload', function() {
-      if (refreshInterval) {
-        clearInterval(refreshInterval);
-      }
-    });
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        warning: 'bg-amber-500',
+        info: 'bg-blue-500'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = `${colors[type]} text-white px-4 py-3 rounded-xl shadow-lg fade-in flex items-center gap-3 max-w-sm`;
+      toast.innerHTML = `
+        <span class="flex-1 text-sm font-medium">${message}</span>
+        <button onclick="this.parentElement.remove()" class="opacity-70 hover:opacity-100">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 300);
+      }, type === 'success' ? 3000 : 5000);
+    }
+
+    console.log('용인대학교 출석 관리 시스템 로드 완료');
+
+    // Service Worker 등록
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('[SW] 등록 완료:', reg.scope))
+        .catch(err => console.error('[SW] 등록 실패:', err));
+    }
   </script>
-
-  <style>
-    .header-desc { font-size: 18px; margin-top: 12px; }
-    .header-buttons { margin-top: 20px; }
-    .new-meeting-desc { margin-bottom: 20px; font-size: 18px; font-weight: bold; }
-    .meeting-title-input { max-width: 500px; margin: 16px auto; display: block; font-size: 18px; }
-    .loading-container { text-align: center; padding: 60px; }
-    .empty-state { text-align: center; padding: 60px; font-size: 20px; color: #666; }
-    .empty-icon { font-size: 48px; margin-bottom: 20px; }
-    .attendee-item.blocked { border-left-color: #e74c3c; }
-    .blocked-name { color: #e74c3c; }
-    .button-group { margin-top: 20px; }
-  </style>
 </body>
 </html>

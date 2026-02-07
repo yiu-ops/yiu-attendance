@@ -1,1346 +1,862 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="scroll-smooth">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <meta name="theme-color" content="#2c3e50">
+  <meta name="theme-color" content="#6366f1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>용인대학교 교직원 회의 출석</title>
-  
+  <meta name="description" content="용인대학교 교직원 회의 출석 시스템 - QR코드와 GPS를 통한 간편한 출석 체크">
+
+  <title>용인대학교 출석체크</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              300: '#a5b4fc',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81'
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-out',
+            'slide-up': 'slideUp 0.5s ease-out',
+            'pulse-slow': 'pulse 3s infinite',
+            'bounce-slow': 'bounce 2s infinite'
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' }
+            },
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- html5-qrcode for QR scanning -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
   <style>
-    /* ========================================
-     * 50세 이상 사용자 맞춤 디자인
-     * 큰 폰트, 큰 버튼, 고대비, 단순함
-     * 구형 기기 호환성 최우선
-     * ======================================== */
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
+    /* 커스텀 그라데이션 배경 */
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #6B8DD6 100%);
+      background-size: 200% 200%;
+      animation: gradientShift 15s ease infinite;
     }
 
-    body {
-      font-family: "맑은 고딕", "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
-      background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-      min-height: 100vh;
-      padding: 20px 16px;
-      line-height: 1.5;
-      overflow-x: hidden;
-      font-size: 20px; /* 기본 폰트 크기 대폭 증가 */
-      color: #333;
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
-    .container {
-      max-width: 480px;
+    .dark .gradient-bg {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e3a5f 100%);
+    }
+
+    /* 글래스모피즘 카드 */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .dark .glass-card {
+      background: rgba(30, 41, 59, 0.95);
+    }
+
+    /* QR 스캐너 스타일 */
+    #qr-reader {
+      width: 100%;
+      max-width: 400px;
       margin: 0 auto;
-      min-height: calc(100vh - 40px);
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
     }
 
-    .card {
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 40px 32px; /* 패딩 증가 */
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-      border: 2px solid rgba(255, 255, 255, 0.3);
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 12px;
-    }
-
-    .university-title {
-      font-size: 36px; /* 대학교 이름 크게 */
-      font-weight: bold;
-      color: #2c3e50;
-      margin-bottom: 12px;
-      letter-spacing: -0.5px;
-    }
-
-    .meeting-title {
-      font-size: 24px; /* 회의 제목 크게 */
-      font-weight: bold;
-      color: #34495e;
-      margin-bottom: 8px;
-    }
-
-    .meeting-description {
-      font-size: 18px;
-      color: #7f8c8d;
-      font-weight: 500;
-    }
-
-    .form-container {
-      flex: 1;
-    }
-
-    /* 상태 표시 (매우 크고 명확하게) */
-    .status-indicator {
-      background: #ecf0f1;
-      border: 3px solid #bdc3c7;
-      border-radius: 16px;
-      padding: 32px 24px; /* 패딩 대폭 증가 */
-      text-align: center;
-      font-size: 20px; /* 상태 텍스트 크게 */
-      font-weight: bold;
-      margin-bottom: 32px;
-      min-height: 100px; /* 최소 높이 증가 */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-    }
-
-    .status-ready {
-      background: linear-gradient(135deg, #d5f4e6, #a7f3d0);
-      border-color: #10b981;
-      color: #047857;
-    }
-
-    .status-checking {
-      background: linear-gradient(135deg, #fef3c7, #fde68a);
-      border-color: #f59e0b;
-      color: #92400e;
-    }
-
-    .status-error {
-      background: linear-gradient(135deg, #fecaca, #fca5a5);
-      border-color: #ef4444;
-      color: #dc2626;
-    }
-
-    .form-group {
-      margin-bottom: 28px; /* 간격 증가 */
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 12px;
-      font-weight: bold;
-      color: #2c3e50;
-      font-size: 20px; /* 라벨 크기 증가 */
-    }
-
-    .required {
-      color: #e74c3c;
-      font-size: 22px;
-    }
-
-    .form-group input {
-      width: 100%;
-      padding: 24px 20px; /* 입력 필드 크기 대폭 증가 */
-      border: 3px solid #bdc3c7;
+    #qr-reader video {
       border-radius: 12px;
-      font-size: 20px; /* 입력 텍스트 크기 증가 */
-      font-family: inherit;
-      background: #ffffff;
-      color: #2c3e50;
-      transition: all 0.3s ease;
-      -webkit-appearance: none;
-      appearance: none;
-      min-height: 70px; /* 최소 높이 보장 */
     }
 
-    .form-group input:focus {
-      outline: none;
-      border-color: #3498db;
-      box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
-      transform: translateY(-2px);
+    /* 토스트 애니메이션 */
+    .toast-enter {
+      animation: toastEnter 0.3s ease-out;
     }
 
-    .form-group input.invalid {
-      border-color: #e74c3c;
-      background: #fdf2f2;
-      animation: shake 0.5s ease-in-out;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-8px); }
-      75% { transform: translateX(8px); }
-    }
-
-    .validation-message {
-      font-size: 16px;
-      margin-top: 12px;
-      color: #e74c3c;
-      font-weight: bold;
+    .toast-exit {
       opacity: 0;
-      transition: all 0.3s ease;
-      transform: translateY(-5px);
+      transform: translateY(-10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
     }
 
-    .validation-message.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* 버튼 (50세 이상 친화적으로 대폭 확대) */
-    .btn {
-      width: 100%;
-      padding: 28px 24px; /* 버튼 크기 대폭 증가 */
-      border: none;
-      border-radius: 16px;
-      font-size: 22px; /* 버튼 폰트 크기 증가 */
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-bottom: 20px;
-      font-family: inherit;
-      min-height: 80px; /* 최소 높이 보장 */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-      text-align: center;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #3498db, #2980b9);
-      color: white;
-      box-shadow: 0 8px 24px rgba(52, 152, 219, 0.3);
-      border: 3px solid transparent;
-    }
-
-    .btn-primary:not(:disabled):hover,
-    .btn-primary:not(:disabled):focus {
-      background: linear-gradient(135deg, #2980b9, #21618c);
-      transform: translateY(-2px);
-      box-shadow: 0 12px 32px rgba(52, 152, 219, 0.4);
-    }
-
-    .btn-secondary {
-      background: #ffffff;
-      color: #34495e;
-      border: 3px solid #bdc3c7;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    }
-
-    .btn-secondary:not(:disabled):hover,
-    .btn-secondary:not(:disabled):focus {
-      background: #ecf0f1;
-      border-color: #95a5a6;
-      transform: translateY(-1px);
-    }
-
-    .btn:disabled {
-      background: #bdc3c7;
-      color: #7f8c8d;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-      border-color: #bdc3c7;
-    }
-
-    /* 알림 메시지 (크고 명확하게) */
-    .alert {
-      padding: 28px 24px; /* 패딩 증가 */
-      border-radius: 16px;
-      margin-bottom: 24px;
-      font-weight: bold;
-      font-size: 18px; /* 알림 폰트 크기 증가 */
-      border-left: 6px solid;
-      line-height: 1.6;
-      animation: slideIn 0.5s ease-out;
-    }
-
-    .alert-success {
-      background: linear-gradient(135deg, #d5f4e6, #a7f3d0);
-      color: #047857;
-      border-color: #10b981;
-    }
-
-    .alert-error {
-      background: linear-gradient(135deg, #fecaca, #fca5a5);
-      color: #dc2626;
-      border-color: #ef4444;
-    }
-
-    .alert-info {
-      background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-      color: #1d4ed8;
-      border-color: #3b82f6;
-    }
-
-    @keyframes slideIn {
+    @keyframes toastEnter {
       from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(-20px) scale(0.95);
       }
       to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
       }
     }
 
-    /* 로딩 (단순하게) */
-    .loading {
-      display: none;
-      text-align: center;
-      padding: 60px 20px;
+    /* 입력 필드 포커스 효과 */
+    .input-focus-ring:focus {
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
     }
 
+    /* 스피너 */
     .spinner {
-      border: 6px solid #ecf0f1;
-      border-top: 6px solid #3498db;
+      border: 3px solid rgba(99, 102, 241, 0.2);
+      border-top-color: #6366f1;
       border-radius: 50%;
-      width: 60px; /* 스피너 크기 증가 */
-      height: 60px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 24px;
+      animation: spin 0.8s linear infinite;
     }
 
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      to { transform: rotate(360deg); }
     }
 
-    .loading-text {
-      font-size: 20px;
-      font-weight: bold;
-      color: #34495e;
+    /* 탭 인디케이터 */
+    .tab-indicator {
+      transition: transform 0.3s ease, width 0.3s ease;
     }
 
-    /* 완료 메시지 */
-    .completion-message {
-      background: linear-gradient(135deg, #10b981, #047857);
-      color: white;
-      padding: 48px 32px; /* 패딩 증가 */
-      border-radius: 20px;
-      text-align: center;
-      margin-top: 32px;
-      display: none;
-      animation: slideIn 0.8s ease-out;
+    /* 모바일 최적화 */
+    @media (max-width: 640px) {
+      .mobile-padding {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
     }
 
-    .completion-icon {
-      font-size: 80px; /* 아이콘 크기 증가 */
-      margin-bottom: 24px;
-      animation: bounce 2s infinite;
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    .completion-text {
-      font-size: 28px; /* 완료 텍스트 크기 증가 */
-      font-weight: bold;
-      margin-bottom: 20px;
-    }
-
-    .completion-details {
-      font-size: 18px;
-      line-height: 1.6;
-      white-space: pre-line;
-      opacity: 0.95;
-    }
-
-    .footer {
-      text-align: center;
-      padding: 24px;
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 16px;
-      font-weight: 500;
-    }
-
-    /* 위치 안내 */
-    .location-hint {
-      background: rgba(52, 152, 219, 0.1);
-      border: 2px solid rgba(52, 152, 219, 0.3);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 24px;
-      font-size: 18px; /* 안내 텍스트 크기 증가 */
-      color: #2c3e50;
-      display: none;
-      text-align: center;
-      font-weight: bold;
-    }
-
-    .location-hint.show {
-      display: block;
-      animation: slideIn 0.5s ease-out;
-    }
-
-    .hidden {
+    /* 스크롤바 숨김 */
+    .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
-
-    /* 모바일 최적화 (50세 이상 고려) */
-    @media (max-width: 480px) {
-      body { 
-        padding: 16px 12px; 
-        font-size: 22px; /* 모바일에서 더 큰 폰트 */
-      }
-      
-      .container { 
-        gap: 20px;
-      }
-      
-      .card { 
-        padding: 36px 28px; 
-        border-radius: 16px;
-      }
-      
-      .university-title { 
-        font-size: 32px; 
-      }
-      
-      .meeting-title { 
-        font-size: 20px; 
-      }
-      
-      .form-group input { 
-        padding: 28px 20px;
-        font-size: 22px;
-        min-height: 76px;
-      }
-      
-      .btn {
-        padding: 32px 20px;
-        min-height: 88px;
-        font-size: 24px;
-      }
-      
-      .status-indicator {
-        padding: 36px 20px;
-        font-size: 22px;
-        min-height: 110px;
-      }
-      
-      .completion-icon {
-        font-size: 72px;
-      }
-      
-      .completion-text {
-        font-size: 24px;
-      }
-    }
-
-    /* 아이폰 X 이상 노치 대응 */
-    @supports (padding: env(safe-area-inset-top)) {
-      .container {
-        padding-top: env(safe-area-inset-top);
-        padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
-      }
-    }
-
-    /* 가로 모드 대응 */
-    @media (orientation: landscape) and (max-height: 500px) {
-      .container {
-        min-height: calc(100vh - 32px);
-        gap: 16px;
-      }
-      
-      .card {
-        padding: 24px 28px;
-      }
-      
-      .status-indicator {
-        min-height: 80px;
-        padding: 20px;
-      }
-      
-      .university-title {
-        font-size: 28px;
-      }
-    }
-
-    /* 접근성 개선 */
-    .btn:focus, input:focus {
-      outline: 4px solid #f39c12;
-      outline-offset: 3px;
-    }
-
-    /* 고대비 모드 지원 */
-    @media (prefers-contrast: high) {
-      .btn {
-        border-width: 4px;
-      }
-      
-      .form-group input {
-        border-width: 4px;
-      }
-      
-      .status-indicator {
-        border-width: 4px;
-      }
-    }
-
-    /* 애니메이션 축소 (50세 이상 고려) */
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-      }
-    }
-
-    /* 터치 친화적 간격 */
-    .form-group {
-      margin-bottom: 32px;
-    }
-
-    /* 큰 터치 영역 */
-    .btn, input {
-      min-width: 48px;
-      min-height: 80px;
-    }
-
-    /* 라벨 옵션 표시 */
-    .label-optional {
-      color: #7f8c8d;
-      font-weight: normal;
-    }
-
-    /* 필드 힌트 텍스트 */
-    .field-hint {
-      color: #666;
-      font-size: 14px;
-      margin-top: 8px;
-      display: block;
-      line-height: 1.4;
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <!-- 헤더 -->
-    <div class="card header">
-      <h1 class="university-title">용인대학교</h1>
-      <h2 class="meeting-title" id="meetingTitle">교직원 회의 출석</h2>
-      <p class="meeting-description" id="meetingDescription">출석 정보를 정확히 입력해주세요</p>
+<body class="gradient-bg min-h-screen font-sans antialiased text-gray-900 dark:text-white transition-colors duration-300">
+
+  <!-- 다크모드 토글 버튼 -->
+  <button
+    id="darkModeToggle"
+    class="fixed top-4 right-4 z-50 p-3 rounded-full glass-card shadow-lg hover:scale-110 transition-transform duration-200"
+    onclick="toggleDarkMode()"
+  >
+    <svg id="sunIcon" class="w-6 h-6 text-yellow-500 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+    </svg>
+    <svg id="moonIcon" class="w-6 h-6 text-indigo-600 block dark:hidden" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+    </svg>
+  </button>
+
+  <div class="container mx-auto px-4 py-6 max-w-lg min-h-screen flex flex-col">
+
+    <!-- 헤더 카드 -->
+    <div class="glass-card rounded-3xl shadow-2xl p-6 mb-6 animate-fade-in">
+      <div class="text-center">
+        <!-- 로고/아이콘 -->
+        <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">용인대학교</h1>
+        <h2 id="meetingTitle" class="text-lg font-medium text-indigo-600 dark:text-indigo-400 mb-2">교직원 회의 출석</h2>
+        <p id="meetingDescription" class="text-sm text-gray-500 dark:text-gray-400">QR 코드 스캔 또는 직접 입력으로 출석하세요</p>
+      </div>
     </div>
 
-    <!-- 메인 폼 -->
-    <div class="card form-container">
-      <div id="alertContainer"></div>
-      
-      <!-- 위치 권한 안내 -->
-      <div class="location-hint" id="locationHint">
-        위치 권한을 허용해주세요.<br>
-        브라우저에서 "허용" 버튼을 눌러주세요.
-      </div>
-      
+    <!-- 메인 컨텐츠 -->
+    <div class="glass-card rounded-3xl shadow-2xl p-6 flex-1 animate-slide-up">
+
+      <!-- 알림 컨테이너 -->
+      <div id="alertContainer" class="mb-4"></div>
+
       <!-- 상태 표시 -->
-      <div class="status-indicator" id="statusIndicator">
-        시스템을 준비하고 있습니다...
-      </div>
-      
-      <!-- 로딩 -->
-      <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <p id="loadingText" class="loading-text">처리중입니다...</p>
+      <div id="statusIndicator" class="mb-6 p-4 rounded-2xl bg-gray-100 dark:bg-slate-700 border-2 border-gray-200 dark:border-slate-600 transition-all duration-300">
+        <div class="flex items-center justify-center gap-3">
+          <div class="spinner w-5 h-5"></div>
+          <span class="font-medium text-gray-600 dark:text-gray-300">시스템을 준비하고 있습니다...</span>
+        </div>
       </div>
 
-      <!-- 출석 폼 -->
-      <form id="attendanceForm">
-        <div class="form-group">
-          <label for="name">
-            성명 <span class="required">*</span>
-          </label>
-          <input type="text" id="name" placeholder="홍길동" maxlength="20" required>
-          <div class="validation-message" id="name-validation"></div>
-        </div>
-
-        <div class="form-group">
-          <label for="department">
-            소속 <span class="required">*</span>
-          </label>
-          <input type="text" id="department" placeholder="경영학과, 교무팀 등" maxlength="50" required>
-          <div class="validation-message" id="department-validation"></div>
-        </div>
-
-        <div class="form-group">
-          <label for="email">
-            이메일 <small class="label-optional">(선택사항)</small>
-          </label>
-          <input type="email" id="email" placeholder="출석 확인 이메일을 받으시려면 입력하세요" maxlength="100"
-                 autocomplete="email"
-                 autocapitalize="none"
-                 autocorrect="off"
-                 name="user_email">
-          <small class="field-hint">
-            이메일을 입력하시면 출석 확인 정보가 전송됩니다. 입력하지 않아도 출석 체크가 가능합니다.
-          </small>
-          <div class="validation-message" id="email-validation"></div>
-        </div>
-
-        <!-- 출석 체크 버튼 -->
-        <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
-          출석 체크하기
+      <!-- 탭 네비게이션 -->
+      <div class="flex bg-gray-100 dark:bg-slate-700 rounded-xl p-1 mb-6">
+        <button
+          id="tabManual"
+          class="flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-sm"
+          onclick="switchTab('manual')"
+        >
+          직접 입력
         </button>
-
-        <!-- 위치 확인 버튼 -->
-        <button type="button" class="btn btn-secondary" onclick="recheckLocation()" id="locationBtn">
-          위치 다시 확인하기
+        <button
+          id="tabQR"
+          class="flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          onclick="switchTab('qr')"
+        >
+          QR 스캔
         </button>
+      </div>
 
-        <!-- 완료 메시지 -->
-        <div class="completion-message" id="completionMessage">
-          <div class="completion-icon">✅</div>
-          <div class="completion-text">출석 완료!</div>
-          <div class="completion-details" id="completionDetails"></div>
+      <!-- 직접 입력 탭 -->
+      <div id="manualTab" class="tab-content">
+        <form id="attendanceForm" class="space-y-5">
+          <!-- 성명 -->
+          <div>
+            <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              성명 <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="name"
+              placeholder="홍길동"
+              maxlength="20"
+              required
+              class="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none input-focus-ring transition-all duration-200"
+            >
+            <p id="name-validation" class="mt-1.5 text-sm text-red-500 hidden"></p>
+          </div>
+
+          <!-- 소속 -->
+          <div>
+            <label for="department" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              소속 <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="department"
+              placeholder="경영학과, 교무팀 등"
+              maxlength="50"
+              required
+              class="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none input-focus-ring transition-all duration-200"
+            >
+            <p id="department-validation" class="mt-1.5 text-sm text-red-500 hidden"></p>
+          </div>
+
+          <!-- 이메일 (선택) -->
+          <div>
+            <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              이메일 <span class="text-gray-400 font-normal">(선택)</span>
+            </label>
+            <input
+              type="email"
+              id="email"
+              placeholder="example@yiu.ac.kr"
+              maxlength="100"
+              autocomplete="email"
+              class="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none input-focus-ring transition-all duration-200"
+            >
+            <p class="mt-1.5 text-xs text-gray-400 dark:text-gray-500">출석 확인 이메일을 받으시려면 입력하세요</p>
+            <p id="email-validation" class="mt-1 text-sm text-red-500 hidden"></p>
+          </div>
+
+          <!-- 출석 버튼 -->
+          <button
+            type="submit"
+            id="submitBtn"
+            disabled
+            class="w-full py-4 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:shadow-none transform hover:-translate-y-0.5 disabled:translate-y-0 transition-all duration-200"
+          >
+            <span id="submitBtnText">위치 확인 후 출석 체크</span>
+          </button>
+
+          <!-- 위치 재확인 버튼 -->
+          <button
+            type="button"
+            id="locationBtn"
+            onclick="recheckLocation()"
+            class="w-full py-3.5 px-6 rounded-xl font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border-2 border-indigo-200 dark:border-indigo-800 transition-all duration-200"
+          >
+            <span class="flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              위치 다시 확인하기
+            </span>
+          </button>
+        </form>
+      </div>
+
+      <!-- QR 스캔 탭 -->
+      <div id="qrTab" class="tab-content hidden">
+        <div class="text-center mb-6">
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm font-medium">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            관리자가 생성한 QR 코드를 스캔하세요
+          </div>
         </div>
-      </form>
+
+        <!-- QR 스캐너 -->
+        <div id="qr-reader" class="mb-6 rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-slate-600"></div>
+
+        <!-- QR 스캔 결과 -->
+        <div id="qrResult" class="hidden">
+          <div class="p-4 bg-green-50 dark:bg-green-900/30 rounded-xl border-2 border-green-200 dark:border-green-800 mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-semibold text-green-800 dark:text-green-400">QR 코드 인식 완료!</p>
+                <p id="qrSessionInfo" class="text-sm text-green-600 dark:text-green-500"></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- QR 스캔 후 이름/소속 입력 -->
+          <form id="qrAttendanceForm" class="space-y-4">
+            <div>
+              <label for="qrName" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                성명 <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="qrName"
+                placeholder="홍길동"
+                maxlength="20"
+                required
+                class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 focus:border-indigo-500 focus:outline-none transition-all duration-200"
+              >
+            </div>
+            <div>
+              <label for="qrDepartment" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                소속 <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="qrDepartment"
+                placeholder="경영학과, 교무팀 등"
+                maxlength="50"
+                required
+                class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 focus:border-indigo-500 focus:outline-none transition-all duration-200"
+              >
+            </div>
+            <button
+              type="submit"
+              id="qrSubmitBtn"
+              class="w-full py-4 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+            >
+              QR 출석 체크하기
+            </button>
+          </form>
+        </div>
+
+        <!-- QR 스캔 버튼 -->
+        <div id="qrControls" class="space-y-3">
+          <button
+            id="startScanBtn"
+            onclick="startQRScanner()"
+            class="w-full py-4 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+          >
+            <span class="flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+              </svg>
+              QR 코드 스캔 시작
+            </span>
+          </button>
+          <button
+            id="stopScanBtn"
+            onclick="stopQRScanner()"
+            class="w-full py-3 px-6 rounded-xl font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 hidden transition-all duration-200"
+          >
+            스캔 중지
+          </button>
+        </div>
+      </div>
+
+      <!-- 완료 메시지 -->
+      <div id="completionMessage" class="hidden mt-6">
+        <div class="text-center p-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl text-white">
+          <div class="w-20 h-20 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center animate-bounce-slow">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-2">출석 완료!</h3>
+          <p id="completionDetails" class="text-green-100 whitespace-pre-line"></p>
+        </div>
+      </div>
+
+      <!-- 로딩 오버레이 -->
+      <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-2xl text-center max-w-sm mx-4">
+          <div class="spinner w-12 h-12 mx-auto mb-4"></div>
+          <p id="loadingText" class="font-medium text-gray-700 dark:text-gray-300">처리중입니다...</p>
+        </div>
+      </div>
     </div>
 
     <!-- 푸터 -->
-    <div class="footer">
-      용인대학교 출석시스템 © 2025
+    <div class="text-center py-4 text-white/70 text-sm">
+      <p>용인대학교 출석시스템 &copy; 2025</p>
+      <p class="text-xs mt-1 text-white/50">PWA 지원 | QR + GPS 이중 인증</p>
     </div>
   </div>
 
   <script>
     // ========================================
-    // 50세 이상 사용자 + 구형 기기 호환성 최우선
-    // ES5 문법, 단순한 로직, 명확한 메시지
+    // 설정 및 전역 변수
     // ========================================
 
-    // Promise Polyfill (IE 지원)
-    if (typeof Promise === 'undefined') {
-      (function() {
-        function PromisePolyfill(executor) {
-          var self = this;
-          self.state = 'pending';
-          self.value = undefined;
-          self.handlers = [];
-
-          function resolve(value) {
-            if (self.state !== 'pending') return;
-            self.state = 'fulfilled';
-            self.value = value;
-            self.handlers.forEach(function(h) { h.onFulfilled(value); });
-          }
-
-          function reject(reason) {
-            if (self.state !== 'pending') return;
-            self.state = 'rejected';
-            self.value = reason;
-            self.handlers.forEach(function(h) { h.onRejected(reason); });
-          }
-
-          self.then = function(onFulfilled, onRejected) {
-            return new PromisePolyfill(function(res, rej) {
-              function handle(fn, fallback, val) {
-                try {
-                  if (typeof fn === 'function') {
-                    res(fn(val));
-                  } else {
-                    fallback(val);
-                  }
-                } catch (e) { rej(e); }
-              }
-              var handler = {
-                onFulfilled: function(v) { handle(onFulfilled, res, v); },
-                onRejected: function(v) { handle(onRejected, rej, v); }
-              };
-              if (self.state === 'fulfilled') {
-                setTimeout(function() { handler.onFulfilled(self.value); }, 0);
-              } else if (self.state === 'rejected') {
-                setTimeout(function() { handler.onRejected(self.value); }, 0);
-              } else {
-                self.handlers.push(handler);
-              }
-            });
-          };
-
-          self.catch = function(onRejected) {
-            return self.then(null, onRejected);
-          };
-
-          try {
-            executor(resolve, reject);
-          } catch (e) {
-            reject(e);
-          }
-        }
-        window.Promise = PromisePolyfill;
-      })();
-    }
-
-    // 설정 (관리자가 수정)
-    var BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzYDZWn1OzOGiQ8OOeeepVhZjpMMfeoAfZ7AlFXg2w8yQWKSvEw9X7WQXxYaVF5RjTtAA/exec';
-    
-    // 전역 변수 (구형 브라우저 호환)
-    var isLocationValid = false;
-    var isSystemReady = false;
-    var isCompleted = false;
-    var isSubmitting = false;
-    var deviceInfo = null;
-    var lastKnownPosition = null;
-    var locationRequested = false;
-    var locationSettings = {
-      target_latitude: 37.2420,
-      target_longitude: 127.1775,
-      location_radius: 1200
+    const CONFIG = {
+      BACKEND_URL: 'https://script.google.com/macros/s/AKfycbzYDZWn1OzOGiQ8OOeeepVhZjpMMfeoAfZ7AlFXg2w8yQWKSvEw9X7WQXxYaVF5RjTtAA/exec',
+      DEFAULT_LOCATION: {
+        latitude: 37.2420,
+        longitude: 127.1775,
+        radius: 1200
+      },
+      REQUEST_TIMEOUT: 30000,
+      QR_TOKEN_PREFIX: 'YU_QR_'
     };
 
-    // 기기 정보
-    var isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    var isOldDevice = false;
+    let state = {
+      isLocationValid: false,
+      isSystemReady: false,
+      isCompleted: false,
+      isSubmitting: false,
+      lastKnownPosition: null,
+      locationSettings: { ...CONFIG.DEFAULT_LOCATION },
+      deviceInfo: null,
+      qrScanner: null,
+      qrToken: null,
+      currentTab: 'manual'
+    };
 
-    console.log('용인대학교 출석 시스템 시작 (50세+ 최적화, 기기 호환성 강화)');
+    // ========================================
+    // 초기화
+    // ========================================
 
-    /**
-     * 페이지 로드 시 초기화 (구형 브라우저 지원)
-     */
-    if (window.addEventListener) {
-      window.addEventListener('load', function() {
-        console.log('페이지 로드 완료');
-        initializeSystem();
-      });
-    } else if (window.attachEvent) { // IE8 이하
-      window.attachEvent('onload', function() {
-        console.log('페이지 로드 완료 (IE)');
-        initializeSystem();
-      });
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeSystem();
+      initializeDarkMode();
+      setupEventListeners();
+      registerServiceWorker();
+    });
 
-    /**
-     * 시스템 초기화 (단순화)
-     */
     function initializeSystem() {
-      try {
-        console.log('시스템 초기화 시작');
-        
-        // 1. 기기 정보 수집
-        collectDeviceInfo();
-        
-        // 2. 구형 기기 감지
-        detectOldDevice();
-        
-        // 3. 이벤트 리스너 설정
-        setupEventListeners();
-        
-        // 4. 이메일 자동 감지 시도
-        tryAutoFillEmail();
-        
-        // 5. 시스템 준비 완료
-        isSystemReady = true;
-        updateStatus('위치 확인이 필요합니다', 'checking');
-        
-        // 6. 백그라운드에서 설정 로드
-        setTimeout(function() {
-          loadSettingsFromServer();
-        }, 1000);
-        
-        // 7. 자동 위치 확인 시작
-        setTimeout(function() {
-          startLocationCheck();
-        }, 2000);
-        
-        console.log('시스템 초기화 완료');
-        
-      } catch (error) {
-        console.error('시스템 초기화 오류:', error);
-        updateStatus('시스템 준비 중 오류가 발생했습니다', 'error');
-        showAlert('시스템 초기화에 실패했습니다.\n페이지를 새로고침해주세요.', 'error');
-      }
+      console.log('시스템 초기화 시작');
+
+      // 기기 정보 수집
+      collectDeviceInfo();
+
+      // 시스템 준비 완료
+      state.isSystemReady = true;
+      updateStatus('위치 확인이 필요합니다', 'checking');
+
+      // 백그라운드에서 설정 로드
+      setTimeout(loadSettingsFromServer, 500);
+
+      // 자동 위치 확인
+      setTimeout(startLocationCheck, 1500);
+
+      console.log('시스템 초기화 완료');
     }
 
-    /**
-     * 이메일 자동 채우기 시도
-     * 브라우저 기본 자동완성에 의존 (autocomplete="email" 속성 사용)
-     */
-    function tryAutoFillEmail() {
-      // 브라우저 자동완성이 자연스럽게 작동하도록 함
-      // 별도의 API 호출 없이 autocomplete 속성에 의존
-      console.log('이메일 자동완성 대기 중 (브라우저 기본 동작)');
-    }
-
-    /**
-     * 기기 정보 수집 (안전하게)
-     */
     function collectDeviceInfo() {
-      try {
-        deviceInfo = {
-          userAgent: navigator.userAgent || 'unknown',
-          platform: navigator.platform || 'unknown',
-          language: navigator.language || 'ko',
-          timeZone: 'Asia/Seoul',
-          timestamp: new Date().getTime()
-        };
-        
-        // 화면 정보 (안전하게)
-        if (window.screen) {
-          deviceInfo.screenInfo = screen.width + 'x' + screen.height;
-          if (screen.colorDepth) {
-            deviceInfo.screenInfo += 'x' + screen.colorDepth;
-          }
-        } else {
-          deviceInfo.screenInfo = 'unknown';
-        }
-        
-        // 터치 지원 (안전하게)
-        if (navigator.maxTouchPoints !== undefined) {
-          deviceInfo.touchPoints = navigator.maxTouchPoints;
-        } else if (navigator.msMaxTouchPoints !== undefined) {
-          deviceInfo.touchPoints = navigator.msMaxTouchPoints;
-        } else {
-          deviceInfo.touchPoints = 0;
-        }
-        
-        console.log('기기 정보 수집 완료');
-        
-      } catch (error) {
-        console.error('기기 정보 수집 오류:', error);
-        deviceInfo = {
-          userAgent: 'error',
-          timestamp: new Date().getTime(),
-          fallback: true
-        };
+      state.deviceInfo = {
+        userAgent: navigator.userAgent || 'unknown',
+        platform: navigator.platform || 'unknown',
+        language: navigator.language || 'ko',
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Seoul',
+        screenInfo: `${screen.width}x${screen.height}x${screen.colorDepth || 24}`,
+        touchPoints: navigator.maxTouchPoints || 0,
+        timestamp: Date.now()
+      };
+    }
+
+    function initializeDarkMode() {
+      const isDark = localStorage.getItem('darkMode') === 'true' ||
+                     (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+      if (isDark) {
+        document.documentElement.classList.add('dark');
       }
     }
 
-    /**
-     * 구형 기기 감지
-     */
-    function detectOldDevice() {
-      try {
-        var userAgent = navigator.userAgent;
-        
-        // 구형 기기 패턴
-        var oldPatterns = [
-          /iPhone.*OS [1-9]_/i,      // iOS 9 이하
-          /Android [1-4]\./i,        // Android 4 이하
-          /MSIE/i,                   // Internet Explorer
-          /Trident/i,                // IE 호환 모드
-          /Opera Mini/i              // Opera Mini
-        ];
-        
-        for (var i = 0; i < oldPatterns.length; i++) {
-          if (oldPatterns[i].test(userAgent)) {
-            isOldDevice = true;
-            console.log('구형 기기 감지됨');
-            break;
-          }
-        }
-        
-        // 구형 기기 특별 처리
-        if (isOldDevice) {
-          // 애니메이션 비활성화
-          var style = document.createElement('style');
-          style.textContent = '* { animation: none !important; transition: none !important; }';
-          document.head.appendChild(style);
-          
-          console.log('구형 기기 최적화 적용');
-        }
-        
-      } catch (error) {
-        console.error('구형 기기 감지 오류:', error);
+    function toggleDarkMode() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('darkMode', isDark);
+    }
+
+    function registerServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker 등록 성공'))
+          .catch(err => console.log('Service Worker 등록 실패:', err));
       }
     }
 
-    /**
-     * 이벤트 리스너 설정 (구형 브라우저 호환)
-     */
+    // ========================================
+    // 이벤트 리스너
+    // ========================================
+
     function setupEventListeners() {
-      try {
-        // 입력 필드 검증
-        var fields = ['name', 'department', 'email'];
-        for (var i = 0; i < fields.length; i++) {
-          var field = fields[i];
-          var element = document.getElementById(field);
-          
-          if (element) {
-            // 구형 브라우저 호환 이벤트 리스너
-            if (element.addEventListener) {
-              element.addEventListener('input', createFieldValidator(field));
-              element.addEventListener('blur', createFieldValidator(field));
-              element.addEventListener('focus', createFieldFocusHandler());
-            } else if (element.attachEvent) { // IE8 이하
-              element.attachEvent('onpropertychange', createFieldValidator(field));
-              element.attachEvent('onblur', createFieldValidator(field));
-            }
-          }
-        }
-
-        // 폼 제출 이벤트
-        var form = document.getElementById('attendanceForm');
-        if (form) {
-          if (form.addEventListener) {
-            form.addEventListener('submit', handleFormSubmit);
-          } else if (form.attachEvent) {
-            form.attachEvent('onsubmit', handleFormSubmit);
-          }
-        }
-        
-        console.log('이벤트 리스너 설정 완료');
-        
-      } catch (error) {
-        console.error('이벤트 리스너 설정 오류:', error);
-      }
-    }
-
-    /**
-     * 필드 검증기 생성 (클로저 사용)
-     */
-    function createFieldValidator(fieldName) {
-      return function() {
-        validateField(fieldName);
-        validateForm();
-      };
-    }
-
-    /**
-     * 필드 포커스 핸들러 생성
-     */
-    function createFieldFocusHandler() {
-      return function() {
-        var self = this;
-        setTimeout(function() {
-          if (self.scrollIntoView) {
-            self.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 300);
-      };
-    }
-
-    /**
-     * 설정 로드 (에러 처리 강화)
-     */
-    function loadSettingsFromServer() {
-      try {
-        console.log('서버에서 설정 로드 시도');
-        
-        callGoogleScript('getSettings', null)
-          .then(function(result) {
-            if (result && typeof result === 'object') {
-              console.log('설정 로드 성공');
-              updateSettingsFromServer(result);
-            } else {
-              console.log('설정 로드 실패, 기본값 사용');
-            }
-          })
-          .catch(function(error) {
-            console.log('설정 로드 오류:', error.message);
-            console.log('기본 설정값 사용');
+      // 폼 입력 검증
+      ['name', 'department', 'email'].forEach(field => {
+        const el = document.getElementById(field);
+        if (el) {
+          el.addEventListener('input', () => {
+            validateField(field);
+            validateForm();
           });
-          
-      } catch (error) {
-        console.log('설정 로드 중 예외:', error);
+          el.addEventListener('blur', () => validateField(field));
+        }
+      });
+
+      // 메인 폼 제출
+      document.getElementById('attendanceForm').addEventListener('submit', handleFormSubmit);
+
+      // QR 폼 제출
+      document.getElementById('qrAttendanceForm')?.addEventListener('submit', handleQRFormSubmit);
+    }
+
+    // ========================================
+    // 탭 전환
+    // ========================================
+
+    function switchTab(tab) {
+      state.currentTab = tab;
+
+      // 탭 버튼 스타일
+      const manualBtn = document.getElementById('tabManual');
+      const qrBtn = document.getElementById('tabQR');
+
+      if (tab === 'manual') {
+        manualBtn.className = 'flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-sm';
+        qrBtn.className = 'flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200';
+        document.getElementById('manualTab').classList.remove('hidden');
+        document.getElementById('qrTab').classList.add('hidden');
+        stopQRScanner();
+      } else {
+        qrBtn.className = 'flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 bg-white dark:bg-slate-600 text-indigo-600 dark:text-white shadow-sm';
+        manualBtn.className = 'flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200';
+        document.getElementById('qrTab').classList.remove('hidden');
+        document.getElementById('manualTab').classList.add('hidden');
       }
+    }
+
+    // ========================================
+    // 설정 로드
+    // ========================================
+
+    function loadSettingsFromServer() {
+      callGoogleScript('getSettings', null)
+        .then(result => {
+          if (result && typeof result === 'object') {
+            updateSettingsFromServer(result);
+          }
+        })
+        .catch(err => console.log('설정 로드 실패, 기본값 사용'));
     }
 
     function updateSettingsFromServer(settings) {
-      try {
-        // UI 업데이트
-        var titleElement = document.getElementById('meetingTitle');
-        var descElement = document.getElementById('meetingDescription');
-        
-        if (titleElement && settings.meeting_title) {
-          titleElement.textContent = settings.meeting_title;
-        }
-        
-        if (descElement && settings.meeting_description) {
-          descElement.textContent = settings.meeting_description;
-        }
-        
-        // 위치 설정 업데이트
-        if (settings.target_latitude && settings.target_longitude) {
-          locationSettings.target_latitude = parseFloat(settings.target_latitude);
-          locationSettings.target_longitude = parseFloat(settings.target_longitude);
-        }
-        
-        if (settings.location_radius) {
-          locationSettings.location_radius = parseFloat(settings.location_radius);
-        }
-        
-        console.log('설정 적용 완료:', locationSettings);
-        
-      } catch (error) {
-        console.error('설정 적용 오류:', error);
+      if (settings.meeting_title) {
+        document.getElementById('meetingTitle').textContent = settings.meeting_title;
+      }
+      if (settings.meeting_description) {
+        document.getElementById('meetingDescription').textContent = settings.meeting_description;
+      }
+      if (settings.target_latitude && settings.target_longitude) {
+        state.locationSettings.latitude = parseFloat(settings.target_latitude);
+        state.locationSettings.longitude = parseFloat(settings.target_longitude);
+      }
+      if (settings.location_radius) {
+        state.locationSettings.radius = parseFloat(settings.location_radius);
       }
     }
 
-    /**
-     * 위치 확인 시작 (50세 이상 친화적)
-     */
+    // ========================================
+    // 위치 확인
+    // ========================================
+
     function startLocationCheck() {
-      try {
-        if (!navigator.geolocation) {
-          updateStatus('이 기기는 위치 확인을 지원하지 않습니다', 'error');
-          showLocationHint();
-          return;
-        }
-
-        updateStatus('위치를 확인하고 있습니다...', 'checking');
-        showLocationHint();
-        
-        console.log('위치 확인 시작');
-        
-        // 구형 기기를 위한 단순한 위치 확인
-        var options = {
-          enableHighAccuracy: !isOldDevice, // 구형 기기는 낮은 정확도로
-          timeout: isOldDevice ? 30000 : 15000, // 구형 기기는 더 오래 기다림
-          maximumAge: 60000
-        };
-        
-        navigator.geolocation.getCurrentPosition(
-          handleLocationSuccess,
-          handleLocationError,
-          options
-        );
-        
-      } catch (error) {
-        console.error('위치 확인 시작 오류:', error);
-        updateStatus('위치 확인 중 오류가 발생했습니다', 'error');
-      }
-    }
-
-    /**
-     * 위치 성공 처리 (단순화)
-     */
-    function handleLocationSuccess(position) {
-      try {
-        lastKnownPosition = position;
-        locationRequested = true;
-        
-        var userLat = position.coords.latitude;
-        var userLng = position.coords.longitude;
-        var accuracy = position.coords.accuracy;
-        
-        console.log('위치 확인 성공:', {
-          lat: userLat, 
-          lng: userLng, 
-          accuracy: accuracy
-        });
-        
-        // 거리 계산
-        var distance = calculateDistance(
-          userLat, userLng, 
-          locationSettings.target_latitude, locationSettings.target_longitude
-        );
-        
-        // 기기별 허용 반경 계산 (단순화)
-        var allowedRadius = calculateAllowedRadius(accuracy);
-        
-        console.log('거리:', distance, 'm, 허용 반경:', allowedRadius, 'm');
-        
-        if (distance <= allowedRadius) {
-          isLocationValid = true;
-          
-          var message = '위치 확인 완료';
-          if (distance < 100) {
-            message += ' - 매우 가까움';
-          } else if (distance < 500) {
-            message += ' - 가까움 (' + Math.round(distance) + 'm)';
-          } else {
-            message += ' - 실내 환경 (' + Math.round(distance) + 'm)';
-          }
-          
-          updateStatus(message, 'ready');
-          hideLocationHint();
-          validateForm();
-          
-          console.log('위치 검증 성공!');
-          
-          // 50세 이상을 위한 성공 알림
-          if (distance > 800) {
-            showAlert(
-              '위치 확인이 완료되었습니다.\n\n' +
-              '현재 거리: ' + Math.round(distance) + 'm\n' +
-              '허용 거리: ' + allowedRadius + 'm 이내\n\n' +
-              '실내에서는 GPS가 부정확할 수 있어\n' +
-              '허용 거리를 넓게 설정했습니다.',
-              'success'
-            );
-          }
-          
-        } else {
-          isLocationValid = false;
-          
-          var errorMessage = '회의실에서 ' + Math.round(distance) + 'm 떨어져 있습니다';
-          updateStatus(errorMessage, 'error');
-          hideLocationHint();
-          
-          // 50세 이상을 위한 상세한 안내
-          var detailMessage = '위치가 회의실에서 너무 멀리 떨어져 있습니다.\n\n';
-          detailMessage += '현재 거리: ' + Math.round(distance) + 'm\n';
-          detailMessage += '허용 거리: ' + allowedRadius + 'm 이내\n';
-          detailMessage += '초과 거리: ' + Math.round(distance - allowedRadius) + 'm\n\n';
-          
-          if (isMobile) {
-            detailMessage += '스마트폰 안내:\n';
-            detailMessage += '• WiFi를 켜주세요\n';
-            detailMessage += '• 창가로 이동해보세요\n';
-            detailMessage += '• "위치 다시 확인" 버튼을 눌러보세요\n';
-          } else {
-            detailMessage += '컴퓨터 안내:\n';
-            detailMessage += '• 가능하면 스마트폰을 사용해주세요\n';
-            detailMessage += '• WiFi 연결을 확인해주세요\n';
-          }
-          
-          showAlert(detailMessage, 'error');
-          validateForm();
-        }
-        
-      } catch (error) {
-        console.error('위치 성공 처리 오류:', error);
-        updateStatus('위치 처리 중 오류가 발생했습니다', 'error');
-      }
-    }
-
-    /**
-     * 위치 오류 처리 (50세 이상 친화적 메시지)
-     */
-    function handleLocationError(error) {
-      try {
-        isLocationValid = false;
-        
-        var errorMessage = '위치 확인이 필요합니다';
-        var alertMessage = '';
-        
-        console.log('위치 오류:', error.code, error.message);
-        
-        switch(error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = '위치 권한이 필요합니다';
-            alertMessage = '위치 권한을 허용해주세요.\n\n';
-            
-            if (isMobile) {
-              alertMessage += '스마트폰 설정 방법:\n';
-              alertMessage += '1. 브라우저 주소창 왼쪽의 자물쇠 아이콘을 누르세요\n';
-              alertMessage += '2. "위치" 항목을 "허용"으로 바꾸세요\n';
-              alertMessage += '3. "위치 다시 확인" 버튼을 누르세요\n\n';
-            } else {
-              alertMessage += '컴퓨터 설정 방법:\n';
-              alertMessage += '1. 주소창 왼쪽의 자물쇠를 클릭하세요\n';
-              alertMessage += '2. 위치를 "허용"으로 바꾸세요\n';
-              alertMessage += '3. "위치 다시 확인" 버튼을 누르세요\n\n';
-            }
-            
-            alertMessage += '※ 권한을 허용한 후 버튼을 눌러주세요';
-            break;
-            
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = 'GPS 신호가 약합니다';
-            alertMessage = 'GPS 신호를 개선해주세요.\n\n';
-            alertMessage += '개선 방법:\n';
-            alertMessage += '• 창문 근처로 이동해보세요\n';
-            alertMessage += '• WiFi를 켜두세요\n';
-            alertMessage += '• 지하나 밀폐된 공간을 피해주세요\n';
-            alertMessage += '• 잠시 후 다시 시도해주세요\n\n';
-            alertMessage += '"위치 다시 확인" 버튼을 눌러주세요';
-            break;
-            
-          case error.TIMEOUT:
-            errorMessage = '위치 확인 시간이 오래 걸립니다';
-            alertMessage = '위치 확인에 시간이 오래 걸리고 있습니다.\n\n';
-            alertMessage += '해결 방법:\n';
-            alertMessage += '• 잠시 기다린 후 다시 시도해주세요\n';
-            alertMessage += '• 다른 장소로 이동해보세요\n';
-            alertMessage += '• WiFi와 모바일 데이터를 모두 켜두세요\n\n';
-            alertMessage += '"위치 다시 확인" 버튼을 눌러주세요';
-            break;
-        }
-        
-        updateStatus(errorMessage, 'checking');
-        showLocationHint();
-        
-        if (alertMessage) {
-          setTimeout(function() {
-            showAlert(alertMessage, 'info');
-          }, 1000);
-        }
-        
-        validateForm();
-        
-      } catch (error) {
-        console.error('위치 오류 처리 중 예외:', error);
-        updateStatus('위치 확인 중 오류가 발생했습니다', 'error');
-      }
-    }
-
-    /**
-     * 허용 반경 계산 (기기별 최적화)
-     * 기본 반경: 1200m (대학 캠퍼스 크기 고려)
-     */
-    function calculateAllowedRadius(accuracy) {
-      var baseRadius = locationSettings.location_radius; // 기본 1200m
-      var multiplier = 1.0;
-
-      // 기기별 보정 (실내 GPS 오차 고려)
-      if (isOldDevice) {
-        multiplier = 1.5;
-      } else if (isMobile) {
-        multiplier = 1.2; // 모바일은 GPS가 비교적 정확
-      } else {
-        multiplier = 1.8; // 데스크탑은 WiFi 기반이라 오차 큼
+      if (!navigator.geolocation) {
+        updateStatus('이 기기는 위치 확인을 지원하지 않습니다', 'error');
+        return;
       }
 
-      // GPS 정확도에 따른 추가 보정 (정확도가 낮을수록 관대하게)
-      if (accuracy > 500) {
-        multiplier = multiplier * 1.3;
-      } else if (accuracy > 200) {
-        multiplier = multiplier * 1.1;
-      }
+      updateStatus('위치를 확인하고 있습니다...', 'checking');
 
-      var effectiveRadius = baseRadius * multiplier;
-
-      // 최소/최대 제한 (합리적 범위로 조정)
-      effectiveRadius = Math.max(300, effectiveRadius);  // 최소 300m
-      effectiveRadius = Math.min(2500, effectiveRadius); // 최대 2.5km
-
-      return Math.round(effectiveRadius);
-    }
-
-    /**
-     * 거리 계산 (Haversine formula)
-     */
-    function calculateDistance(lat1, lng1, lat2, lng2) {
-      var R = 6371000; // 지구 반지름 (미터)
-      var dLat = (lat2 - lat1) * Math.PI / 180;
-      var dLng = (lng2 - lng1) * Math.PI / 180;
-      
-      var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLng / 2) * Math.sin(dLng / 2);
-      
-      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      
-      return R * c;
-    }
-
-    /**
-     * 위치 재확인 (50세 이상 친화적)
-     */
-    function recheckLocation() {
-      var button = document.getElementById('locationBtn');
-      if (!button) return;
-      
-      var originalText = button.textContent;
-      
-      button.disabled = true;
-      button.textContent = '위치 확인중...';
-      
-      try {
-        if (!navigator.geolocation) {
-          throw new Error('이 기기는 위치 확인을 지원하지 않습니다');
-        }
-
-        updateStatus('위치를 다시 확인하고 있습니다...', 'checking');
-        showLocationHint();
-        
-        // 더 관대한 옵션으로 재시도
-        var options = {
+      navigator.geolocation.getCurrentPosition(
+        handleLocationSuccess,
+        handleLocationError,
+        {
           enableHighAccuracy: true,
-          timeout: 20000, // 더 길게 기다림
-          maximumAge: 10000 // 최근 위치 사용 가능
-        };
-        
-        navigator.geolocation.getCurrentPosition(
-          function(position) {
-            button.disabled = false;
-            button.textContent = originalText;
-            handleLocationSuccess(position);
-            
-            if (isLocationValid) {
-              showAlert('위치 재확인이 완료되었습니다!', 'success');
-            }
-          },
-          function(error) {
-            button.disabled = false;
-            button.textContent = originalText;
-            handleLocationError(error);
-          },
-          options
-        );
-        
-      } catch (error) {
-        button.disabled = false;
-        button.textContent = originalText;
-        
-        updateStatus('위치 확인 실패', 'error');
-        showAlert(
-          '위치 확인에 실패했습니다.\n\n' +
-          '다음을 확인해주세요:\n' +
-          '• 위치 권한이 허용되어 있는지\n' +
-          '• WiFi나 모바일 데이터가 연결되어 있는지\n' +
-          '• 창가나 실외로 이동해보세요',
-          'error'
-        );
+          timeout: 15000,
+          maximumAge: 60000
+        }
+      );
+    }
+
+    function handleLocationSuccess(position) {
+      state.lastKnownPosition = position;
+
+      const { latitude: userLat, longitude: userLng, accuracy } = position.coords;
+      const { latitude: targetLat, longitude: targetLng, radius } = state.locationSettings;
+
+      const distance = calculateDistance(userLat, userLng, targetLat, targetLng);
+      const allowedRadius = calculateAllowedRadius(accuracy);
+
+      console.log(`위치: ${userLat}, ${userLng}, 거리: ${distance}m, 허용: ${allowedRadius}m`);
+
+      if (distance <= allowedRadius) {
+        state.isLocationValid = true;
+
+        let message = '위치 확인 완료';
+        if (distance < 100) message += ' - 매우 가까움';
+        else if (distance < 500) message += ` - 가까움 (${Math.round(distance)}m)`;
+        else message += ` - 실내 환경 (${Math.round(distance)}m)`;
+
+        updateStatus(message, 'ready');
+        validateForm();
+
+        if (distance > 800) {
+          showToast('위치 확인 완료! 실내 GPS 오차를 고려하여 허용되었습니다.', 'success');
+        }
+      } else {
+        state.isLocationValid = false;
+        updateStatus(`회의실에서 ${Math.round(distance)}m 떨어져 있습니다`, 'error');
+        showToast(`허용 거리(${allowedRadius}m)를 초과했습니다. 창가로 이동하거나 WiFi를 켜주세요.`, 'error');
+        validateForm();
       }
     }
 
-    /**
-     * 필드 검증 (단순화)
-     */
-    function validateField(fieldName) {
-      var element = document.getElementById(fieldName);
-      var validationElement = document.getElementById(fieldName + '-validation');
-      
-      if (!element || !validationElement) return true; // 이메일이 선택사항이므로 true 반환
-      
-      var value = element.value;
-      if (value && value.replace) {
-        value = value.replace(/^\s+|\s+$/g, ''); // trim() 대체
-      } else {
-        value = '';
-      }
-      
-      var isValid = true;
-      var message = '';
+    function handleLocationError(error) {
+      state.isLocationValid = false;
 
-      // 이메일은 선택사항 처리
-      if (fieldName === 'email') {
-        if (value && value.length > 0) {
-          // 이메일이 입력된 경우에만 형식 검증
-          if (value.indexOf('@') === -1 || value.indexOf('.') === -1) {
-            isValid = false;
-            message = '올바른 이메일 형식을 입력해주세요.';
-          }
+      let message = '위치 확인이 필요합니다';
+      let toastMsg = '';
+
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          message = '위치 권한이 필요합니다';
+          toastMsg = '브라우저에서 위치 권한을 허용해주세요.';
+          break;
+        case error.POSITION_UNAVAILABLE:
+          message = 'GPS 신호가 약합니다';
+          toastMsg = '창가로 이동하거나 WiFi를 켜주세요.';
+          break;
+        case error.TIMEOUT:
+          message = '위치 확인 시간 초과';
+          toastMsg = '다시 시도해주세요.';
+          break;
+      }
+
+      updateStatus(message, 'checking');
+      if (toastMsg) showToast(toastMsg, 'warning');
+      validateForm();
+    }
+
+    function recheckLocation() {
+      const btn = document.getElementById('locationBtn');
+      btn.disabled = true;
+      btn.innerHTML = `
+        <span class="flex items-center justify-center gap-2">
+          <div class="spinner w-5 h-5"></div>
+          위치 확인중...
+        </span>
+      `;
+
+      updateStatus('위치를 다시 확인하고 있습니다...', 'checking');
+
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          btn.disabled = false;
+          btn.innerHTML = `
+            <span class="flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              위치 다시 확인하기
+            </span>
+          `;
+          handleLocationSuccess(position);
+          if (state.isLocationValid) showToast('위치 재확인 완료!', 'success');
+        },
+        error => {
+          btn.disabled = false;
+          btn.innerHTML = `
+            <span class="flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              위치 다시 확인하기
+            </span>
+          `;
+          handleLocationError(error);
+        },
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 10000 }
+      );
+    }
+
+    function calculateDistance(lat1, lng1, lat2, lng2) {
+      const R = 6371000;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLng = (lng2 - lng1) * Math.PI / 180;
+
+      const a = Math.sin(dLat / 2) ** 2 +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLng / 2) ** 2;
+
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function calculateAllowedRadius(accuracy) {
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      let multiplier = isMobile ? 1.2 : 1.8;
+
+      if (accuracy > 500) multiplier *= 1.3;
+      else if (accuracy > 200) multiplier *= 1.1;
+
+      let radius = state.locationSettings.radius * multiplier;
+      return Math.max(300, Math.min(2500, Math.round(radius)));
+    }
+
+    // ========================================
+    // QR 스캐너
+    // ========================================
+
+    function startQRScanner() {
+      if (state.qrScanner) {
+        stopQRScanner();
+      }
+
+      document.getElementById('startScanBtn').classList.add('hidden');
+      document.getElementById('stopScanBtn').classList.remove('hidden');
+      document.getElementById('qrResult').classList.add('hidden');
+
+      state.qrScanner = new Html5Qrcode('qr-reader');
+
+      state.qrScanner.start(
+        { facingMode: 'environment' },
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 }
+        },
+        onQRCodeSuccess,
+        onQRCodeError
+      ).catch(err => {
+        console.error('QR 스캐너 시작 실패:', err);
+        showToast('카메라를 사용할 수 없습니다. 권한을 확인해주세요.', 'error');
+        document.getElementById('startScanBtn').classList.remove('hidden');
+        document.getElementById('stopScanBtn').classList.add('hidden');
+      });
+    }
+
+    function stopQRScanner() {
+      if (state.qrScanner) {
+        state.qrScanner.stop().then(() => {
+          state.qrScanner.clear();
+          state.qrScanner = null;
+        }).catch(console.error);
+      }
+
+      document.getElementById('startScanBtn').classList.remove('hidden');
+      document.getElementById('stopScanBtn').classList.add('hidden');
+    }
+
+    function onQRCodeSuccess(decodedText) {
+      console.log('QR 코드 인식:', decodedText);
+
+      // QR 토큰 검증
+      if (decodedText.startsWith(CONFIG.QR_TOKEN_PREFIX)) {
+        stopQRScanner();
+        state.qrToken = decodedText;
+
+        // UI 업데이트
+        document.getElementById('qrSessionInfo').textContent = `세션: ${decodedText.substring(0, 20)}...`;
+        document.getElementById('qrResult').classList.remove('hidden');
+        document.getElementById('qrControls').classList.add('hidden');
+
+        showToast('QR 코드가 인식되었습니다! 정보를 입력해주세요.', 'success');
+
+        // 위치 확인 시작
+        if (!state.isLocationValid) {
+          startLocationCheck();
         }
-        // 빈 이메일은 유효함 (선택사항)
       } else {
-        // 이름과 소속은 여전히 필수
+        showToast('유효하지 않은 QR 코드입니다.', 'error');
+      }
+    }
+
+    function onQRCodeError(error) {
+      // 스캔 중 오류는 무시 (계속 스캔 시도)
+    }
+
+    // ========================================
+    // 폼 검증
+    // ========================================
+
+    function validateField(fieldName) {
+      const el = document.getElementById(fieldName);
+      const validationEl = document.getElementById(`${fieldName}-validation`);
+      if (!el) return true;
+
+      const value = el.value.trim();
+      let isValid = true;
+      let message = '';
+
+      if (fieldName === 'email') {
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          isValid = false;
+          message = '올바른 이메일 형식을 입력해주세요';
+        }
+      } else {
         if (!value) {
           isValid = false;
-          message = '필수 항목입니다.';
-        } else {
-          switch(fieldName) {
-            case 'name':
-              if (value.length < 2) {
-                isValid = false;
-                message = '이름은 2자 이상 입력해주세요.';
-              } else if (!/^[가-힣a-zA-Z\s\-\.]+$/.test(value)) {
-                isValid = false;
-                message = '한글, 영문만 입력 가능합니다.';
-              }
-              break;
-              
-            case 'department':
-              if (value.length < 2) {
-                isValid = false;
-                message = '소속은 2자 이상 입력해주세요.';
-              }
-              break;
-          }
+          message = '필수 항목입니다';
+        } else if (value.length < 2) {
+          isValid = false;
+          message = '2자 이상 입력해주세요';
         }
       }
 
-      if (isValid) {
-        element.className = element.className.replace(' invalid', '');
-        validationElement.textContent = '';
-        validationElement.className = validationElement.className.replace(' show', '');
-      } else {
-        if (element.className.indexOf('invalid') === -1) {
-          element.className += ' invalid';
-        }
-        validationElement.textContent = message;
-        if (validationElement.className.indexOf('show') === -1) {
-          validationElement.className += ' show';
+      if (validationEl) {
+        if (isValid) {
+          el.classList.remove('border-red-500');
+          validationEl.classList.add('hidden');
+        } else {
+          el.classList.add('border-red-500');
+          validationEl.textContent = message;
+          validationEl.classList.remove('hidden');
         }
       }
 
@@ -1348,349 +864,297 @@
     }
 
     function validateForm() {
-      if (isCompleted) return;
+      if (state.isCompleted) return;
 
-      var nameValid = validateField('name');
-      var deptValid = validateField('department');
-      var emailValid = validateField('email'); // 이메일은 선택사항이므로 항상 true일 수 있음
-      
-      // 이메일은 검증에서 제외하고 이름과 소속만 필수로 처리
-      var isFormValid = nameValid && deptValid && isLocationValid && isSystemReady;
-      
+      const nameValid = validateField('name');
+      const deptValid = validateField('department');
+      const isFormValid = nameValid && deptValid && state.isLocationValid && state.isSystemReady;
+
       updateSubmitButton(isFormValid);
     }
 
     function updateSubmitButton(isValid) {
-      var submitBtn = document.getElementById('submitBtn');
-      if (!submitBtn) return;
-      
-      if (isCompleted) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = '출석 완료됨';
-      } else if (isSubmitting) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = '처리중입니다...';
-      } else if (!isSystemReady) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = '시스템 준비중...';
-      } else if (!isLocationValid) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = '위치 확인 후 출석 체크';
+      const btn = document.getElementById('submitBtn');
+      const textEl = document.getElementById('submitBtnText');
+
+      if (state.isCompleted) {
+        btn.disabled = true;
+        textEl.textContent = '출석 완료됨';
+      } else if (state.isSubmitting) {
+        btn.disabled = true;
+        textEl.textContent = '처리중...';
+      } else if (!state.isSystemReady) {
+        btn.disabled = true;
+        textEl.textContent = '시스템 준비중...';
+      } else if (!state.isLocationValid) {
+        btn.disabled = true;
+        textEl.textContent = '위치 확인 후 출석 체크';
       } else if (isValid) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = '출석 체크하기';
+        btn.disabled = false;
+        textEl.textContent = '출석 체크하기';
       } else {
-        submitBtn.disabled = true;
-        submitBtn.textContent = '모든 정보를 정확히 입력해주세요';
+        btn.disabled = true;
+        textEl.textContent = '정보를 입력해주세요';
       }
     }
 
-    /**
-     * 폼 제출 처리
-     */
+    // ========================================
+    // 폼 제출
+    // ========================================
+
     function handleFormSubmit(e) {
-      if (e && e.preventDefault) {
-        e.preventDefault();
-      } else if (window.event) {
-        window.event.returnValue = false;
-      }
-      
-      if (isSubmitting || isCompleted || !isSystemReady || !isLocationValid) {
-        return false;
+      e.preventDefault();
+
+      if (state.isSubmitting || state.isCompleted || !state.isSystemReady || !state.isLocationValid) {
+        return;
       }
 
-      var formData = {
-        name: document.getElementById('name').value.replace(/^\s+|\s+$/g, ''),
-        department: document.getElementById('department').value.replace(/^\s+|\s+$/g, ''),
-        email: document.getElementById('email').value.replace(/^\s+|\s+$/g, '')
+      const formData = {
+        name: document.getElementById('name').value.trim(),
+        department: document.getElementById('department').value.trim(),
+        email: document.getElementById('email').value.trim()
       };
 
       submitAttendance(formData);
-      return false;
+    }
+
+    function handleQRFormSubmit(e) {
+      e.preventDefault();
+
+      if (!state.qrToken || state.isSubmitting) {
+        showToast('QR 코드를 먼저 스캔해주세요.', 'warning');
+        return;
+      }
+
+      if (!state.isLocationValid) {
+        showToast('위치 확인이 필요합니다.', 'warning');
+        startLocationCheck();
+        return;
+      }
+
+      const formData = {
+        name: document.getElementById('qrName').value.trim(),
+        department: document.getElementById('qrDepartment').value.trim(),
+        email: '',
+        qrToken: state.qrToken
+      };
+
+      if (!formData.name || !formData.department) {
+        showToast('성명과 소속을 입력해주세요.', 'warning');
+        return;
+      }
+
+      submitAttendance(formData);
     }
 
     function submitAttendance(formData) {
-      isSubmitting = true;
+      state.isSubmitting = true;
       updateSubmitButton(false);
       showLoading(true, '출석 정보를 전송하고 있습니다...');
 
-      if (lastKnownPosition) {
-        processSubmission(formData, lastKnownPosition);
+      if (state.lastKnownPosition) {
+        processSubmission(formData, state.lastKnownPosition);
       } else {
-        // 위치 정보가 없으면 다시 확인
         navigator.geolocation.getCurrentPosition(
-          function(position) {
-            processSubmission(formData, position);
-          },
-          function(error) {
-            isSubmitting = false;
+          position => processSubmission(formData, position),
+          error => {
+            state.isSubmitting = false;
             showLoading(false);
-            showAlert('위치 확인에 실패했습니다.\n"위치 다시 확인" 버튼을 먼저 눌러주세요.', 'error');
+            showToast('위치 확인에 실패했습니다. 다시 시도해주세요.', 'error');
             updateSubmitButton(true);
           }
         );
       }
     }
 
-    /**
-     * 제출 처리 (최종)
-     */
     function processSubmission(formData, position) {
-      try {
-        // 출석 데이터 구성
-        var attendanceData = {
-          name: formData.name,
-          department: formData.department,
-          email: formData.email,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-          timestamp: new Date().toISOString()
-        };
-        
-        // 기기 정보 추가
-        for (var key in deviceInfo) {
-          attendanceData[key] = deviceInfo[key];
-        }
-        
-        showLoading(true, '서버에 출석 정보를 저장하고 있습니다...');
-        
-        callGoogleScript('saveAttendance', attendanceData)
-          .then(function(result) {
-            isSubmitting = false;
-            showLoading(false);
-            
-            if (result && result.success) {
-              completeAttendance(result);
-            } else {
-              var message = result.error || result.message || '출석 체크에 실패했습니다.';
-              showAlert(message, 'error');
-              
-              // 위치 오류인 경우 위치 재확인 유도
-              if (message.indexOf('회의실') > -1 || message.indexOf('위치') > -1) {
-                isLocationValid = false;
-                updateStatus('위치를 다시 확인해주세요', 'checking');
-              }
-              
-              updateSubmitButton(true);
+      const attendanceData = {
+        ...formData,
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+        timestamp: new Date().toISOString(),
+        ...state.deviceInfo
+      };
+
+      showLoading(true, '서버에 저장하고 있습니다...');
+
+      callGoogleScript('saveAttendance', attendanceData)
+        .then(result => {
+          state.isSubmitting = false;
+          showLoading(false);
+
+          if (result && result.success) {
+            completeAttendance(result);
+          } else {
+            const message = result?.error || result?.message || '출석 체크에 실패했습니다.';
+            showToast(message, 'error');
+
+            if (message.includes('위치') || message.includes('회의실')) {
+              state.isLocationValid = false;
+              updateStatus('위치를 다시 확인해주세요', 'checking');
             }
-          })
-          .catch(function(error) {
-            isSubmitting = false;
-            showLoading(false);
-            console.error('제출 오류:', error);
-            
-            var errorMessage = '출석 체크 중 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.';
-            
-            if (error.message && error.message.indexOf('네트워크') > -1) {
-              errorMessage = '인터넷 연결에 문제가 있습니다.\n연결을 확인하고 다시 시도해주세요.';
-            }
-            
-            showAlert(errorMessage, 'error');
+
             updateSubmitButton(true);
-          });
-          
-      } catch (error) {
-        isSubmitting = false;
-        showLoading(false);
-        console.error('제출 처리 오류:', error);
-        showAlert('출석 정보 처리 중 오류가 발생했습니다.', 'error');
-        updateSubmitButton(true);
-      }
+          }
+        })
+        .catch(error => {
+          state.isSubmitting = false;
+          showLoading(false);
+          showToast('출석 체크 중 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+          updateSubmitButton(true);
+        });
     }
 
     function completeAttendance(result) {
-      isCompleted = true;
-      
-      var completionDiv = document.getElementById('completionMessage');
-      var completionDetails = document.getElementById('completionDetails');
-      
-      if (completionDiv && completionDetails) {
-        var details = '출석자: ' + document.getElementById('name').value + '\n';
-        details += '소속: ' + document.getElementById('department').value + '\n';
-        details += '시간: ' + new Date().toLocaleString() + '\n';
-        
-        if (result.distance) {
-          details += '거리: ' + result.distance + 'm\n';
-        }
-        
-        if (result.emailSent) {
-          details += '\n확인 이메일이 발송되었습니다.';
-        }
-        
-        completionDetails.textContent = details;
-        completionDiv.style.display = 'block';
-      }
-      
+      state.isCompleted = true;
+
+      const details = [
+        `출석자: ${document.getElementById('name')?.value || document.getElementById('qrName')?.value}`,
+        `소속: ${document.getElementById('department')?.value || document.getElementById('qrDepartment')?.value}`,
+        `시간: ${new Date().toLocaleString()}`,
+        result.distance ? `거리: ${result.distance}m` : '',
+        result.emailSent ? '\n확인 이메일이 발송되었습니다.' : ''
+      ].filter(Boolean).join('\n');
+
+      document.getElementById('completionDetails').textContent = details;
+      document.getElementById('completionMessage').classList.remove('hidden');
+
+      // 폼 숨기기
+      document.getElementById('manualTab').classList.add('hidden');
+      document.getElementById('qrTab').classList.add('hidden');
+
       updateSubmitButton(false);
       updateStatus('출석이 완료되었습니다!', 'ready');
-      
-      // 입력 필드 비활성화
-      var inputs = document.querySelectorAll('#attendanceForm input');
-      for (var i = 0; i < inputs.length; i++) {
-        inputs[i].disabled = true;
-      }
 
-      // 완료 메시지로 스크롤
-      setTimeout(function() {
-        if (completionDiv && completionDiv.scrollIntoView) {
-          completionDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 500);
-      
-      // 성공 피드백 (진동)
+      // 진동 피드백
       if (navigator.vibrate) {
         navigator.vibrate([200, 100, 200]);
       }
+
+      // 완료 메시지로 스크롤
+      document.getElementById('completionMessage').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     // ========================================
-    // Google Apps Script 통신 (JSONP 방식)
+    // Google Apps Script 통신 (JSONP)
     // ========================================
 
     function callGoogleScript(method, params) {
-      return new Promise(function(resolve, reject) {
-        var callbackName = 'gasCallback_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
-        var timeoutId = setTimeout(function() {
+      return new Promise((resolve, reject) => {
+        const callbackName = `gasCallback_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
+        const timeoutId = setTimeout(() => {
           cleanup();
-          reject(new Error('요청 시간 초과 (30초)'));
-        }, 30000); // 50세 이상을 위해 시간 연장
+          reject(new Error('요청 시간 초과'));
+        }, CONFIG.REQUEST_TIMEOUT);
 
         function cleanup() {
-          if (window[callbackName]) {
-            try {
-              delete window[callbackName];
-            } catch (error) {
-              window[callbackName] = undefined;
-            }
-          }
-          
-          if (timeoutId) {
-            clearTimeout(timeoutId);
-          }
-          
-          var script = document.getElementById(callbackName);
-          if (script && script.parentNode) {
-            script.parentNode.removeChild(script);
-          }
+          clearTimeout(timeoutId);
+          delete window[callbackName];
+          const script = document.getElementById(callbackName);
+          if (script) script.remove();
         }
 
-        window[callbackName] = function(result) {
+        window[callbackName] = result => {
           cleanup();
           resolve(result);
         };
 
-        try {
-          var script = document.createElement('script');
-          script.id = callbackName;
-          script.onerror = function() {
-            cleanup();
-            reject(new Error('네트워크 연결 오류'));
-          };
-
-          var url = BACKEND_URL + '?method=' + encodeURIComponent(method) + '&callback=' + callbackName;
-          
-          if (params) {
-            var paramStr = encodeURIComponent(JSON.stringify(params));
-            url += '&params=' + paramStr;
-          }
-
-          script.src = url;
-          document.head.appendChild(script);
-          
-        } catch (error) {
+        const script = document.createElement('script');
+        script.id = callbackName;
+        script.onerror = () => {
           cleanup();
-          reject(new Error('스크립트 로드 오류: ' + error.message));
+          reject(new Error('네트워크 오류'));
+        };
+
+        let url = `${CONFIG.BACKEND_URL}?method=${encodeURIComponent(method)}&callback=${callbackName}`;
+        if (params) {
+          url += `&params=${encodeURIComponent(JSON.stringify(params))}`;
         }
+
+        script.src = url;
+        document.head.appendChild(script);
       });
     }
 
     // ========================================
-    // UI 헬퍼 함수 (50세 이상 친화적)
+    // UI 헬퍼
     // ========================================
 
     function updateStatus(message, type) {
-      var indicator = document.getElementById('statusIndicator');
+      const indicator = document.getElementById('statusIndicator');
       if (!indicator) return;
-      
-      indicator.textContent = message;
-      indicator.className = 'status-indicator status-' + type;
+
+      const colors = {
+        ready: 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-700 dark:text-green-400',
+        checking: 'bg-amber-100 dark:bg-amber-900/30 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400',
+        error: 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-700 dark:text-red-400'
+      };
+
+      const icons = {
+        ready: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>`,
+        checking: `<div class="spinner w-5 h-5"></div>`,
+        error: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>`
+      };
+
+      indicator.className = `mb-6 p-4 rounded-2xl border-2 transition-all duration-300 ${colors[type]}`;
+      indicator.innerHTML = `
+        <div class="flex items-center justify-center gap-3">
+          ${icons[type]}
+          <span class="font-medium">${message}</span>
+        </div>
+      `;
     }
 
-    function showAlert(message, type) {
-      var container = document.getElementById('alertContainer');
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('alertContainer');
       if (!container) return;
-      
-      var alert = document.createElement('div');
-      alert.className = 'alert alert-' + (type || 'info');
-      alert.textContent = message;
-      
-      container.innerHTML = '';
-      container.appendChild(alert);
 
-      setTimeout(function() {
-        if (alert && alert.parentNode) {
-          alert.parentNode.removeChild(alert);
-        }
-      }, type === 'success' ? 8000 : 12000); // 50세 이상을 위해 더 오래 표시
+      const colors = {
+        success: 'bg-green-50 dark:bg-green-900/50 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300',
+        error: 'bg-red-50 dark:bg-red-900/50 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300',
+        warning: 'bg-amber-50 dark:bg-amber-900/50 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300',
+        info: 'bg-blue-50 dark:bg-blue-900/50 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = `toast-enter p-4 rounded-xl border-2 mb-3 ${colors[type]}`;
+      toast.innerHTML = `
+        <div class="flex items-start gap-3">
+          <div class="flex-1 text-sm font-medium">${message}</div>
+          <button onclick="this.parentElement.parentElement.remove()" class="flex-shrink-0 opacity-60 hover:opacity-100">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add('toast-exit');
+        setTimeout(() => toast.remove(), 300);
+      }, type === 'success' ? 5000 : 8000);
     }
 
-    function showLoading(show, text) {
-      var loading = document.getElementById('loading');
-      var form = document.getElementById('attendanceForm');
-      var loadingText = document.getElementById('loadingText');
-      
-      if (!loading || !form || !loadingText) return;
-      
+    function showLoading(show, text = '처리중입니다...') {
+      const overlay = document.getElementById('loadingOverlay');
+      const loadingText = document.getElementById('loadingText');
+
       if (show) {
-        loadingText.textContent = text || '처리중입니다...';
-        loading.style.display = 'block';
-        form.style.opacity = '0.5';
-        form.style.pointerEvents = 'none';
+        loadingText.textContent = text;
+        overlay.classList.remove('hidden');
       } else {
-        loading.style.display = 'none';
-        form.style.opacity = '1';
-        form.style.pointerEvents = 'auto';
+        overlay.classList.add('hidden');
       }
     }
 
-    function showLocationHint() {
-      var hint = document.getElementById('locationHint');
-      if (hint && hint.className.indexOf('show') === -1) {
-        hint.className += ' show';
-      }
-    }
-
-    function hideLocationHint() {
-      var hint = document.getElementById('locationHint');
-      if (hint) {
-        hint.className = hint.className.replace(' show', '');
-      }
-    }
-
-    // ========================================
-    // 기타 이벤트 처리
-    // ========================================
-
-    // 뷰포트 변경 대응
-    if (window.addEventListener) {
-      window.addEventListener('orientationchange', function() {
-        setTimeout(function() {
-          window.scrollTo(0, 0);
-          validateForm();
-        }, 500);
-      });
-    }
-
-    // 페이지 언로드 시 정리
-    if (window.addEventListener) {
-      window.addEventListener('beforeunload', function() {
-        // 정리 작업
-        console.log('페이지 언로드');
-      });
-    }
-
-    console.log('용인대학교 출석 시스템 로드 완료 (50세+ 최적화, 구형 기기 호환)');
+    console.log('용인대학교 출석 시스템 로드 완료 (현대적 UI, QR + GPS 이중 인증)');
   </script>
 </body>
 </html>
