@@ -33,7 +33,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <!-- QRCode.js -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <!-- SheetJS (XLSX) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -174,7 +174,9 @@
           <div class="text-center">
             <!-- QR 코드 표시 영역 -->
             <div id="qrCodeContainer" class="bg-white p-6 rounded-2xl inline-block mb-4 shadow-inner">
-              <canvas id="qrCodeCanvas" width="200" height="200"></canvas>
+              <div id="qrCodeArea" class="w-[200px] h-[200px] flex items-center justify-center text-gray-400 text-sm">
+                QR 코드 생성 대기중
+              </div>
             </div>
 
             <!-- 토큰 정보 -->
@@ -421,6 +423,7 @@
       qrExpiresAt: null,
       qrTimerInterval: null,
       attendanceChart: null,
+      qrInstance: null,
       attendanceData: [],
       blockedData: [],
       settings: {}
@@ -734,34 +737,35 @@
           state.currentQRToken = token;
           state.qrExpiresAt = result.expires || (Date.now() + CONFIG.QR_VALIDITY_MINUTES * 60 * 1000);
 
-          // QR 코드 생성
-          const canvas = document.getElementById('qrCodeCanvas');
+          // QR 코드 생성 (qrcodejs 라이브러리)
+          const qrArea = document.getElementById('qrCodeArea');
+          qrArea.innerHTML = '';
 
-          QRCode.toCanvas(canvas, token, {
-            width: 200,
-            margin: 2,
-            color: {
-              dark: '#1e1b4b',
-              light: '#ffffff'
-            }
-          }, function(error) {
-            if (error) {
-              console.error('QR 코드 생성 실패:', error);
-              showToast('QR 코드 렌더링에 실패했습니다.', 'error');
-              return;
-            }
+          try {
+            state.qrInstance = new QRCode(qrArea, {
+              text: token,
+              width: 200,
+              height: 200,
+              colorDark: '#1e1b4b',
+              colorLight: '#ffffff',
+              correctLevel: QRCode.CorrectLevel.M
+            });
+          } catch (error) {
+            console.error('QR 코드 생성 실패:', error);
+            showToast('QR 코드 렌더링에 실패했습니다.', 'error');
+            return;
+          }
 
-            // 토큰 정보 표시
-            document.getElementById('qrTokenInfo').innerHTML = `
-              <p class="text-sm font-mono text-gray-600 dark:text-gray-400 break-all">${token.substring(0, 30)}...</p>
-              <p class="text-xs text-gray-400 mt-1">유효 시간: ${result.validityMinutes || CONFIG.QR_VALIDITY_MINUTES}분</p>
-            `;
+          // 토큰 정보 표시
+          document.getElementById('qrTokenInfo').innerHTML = `
+            <p class="text-sm font-mono text-gray-600 dark:text-gray-400 break-all">${token.substring(0, 30)}...</p>
+            <p class="text-xs text-gray-400 mt-1">유효 시간: ${result.validityMinutes || CONFIG.QR_VALIDITY_MINUTES}분</p>
+          `;
 
-            // 타이머 시작
-            startQRTimer();
+          // 타이머 시작
+          startQRTimer();
 
-            showToast('QR 코드가 생성되었습니다!', 'success');
-          });
+          showToast('QR 코드가 생성되었습니다!', 'success');
         })
         .catch(err => {
           console.error('QR 토큰 서버 요청 실패:', err);
@@ -798,12 +802,22 @@
         return;
       }
 
-      const canvas = document.getElementById('qrCodeCanvas');
+      const qrArea = document.getElementById('qrCodeArea');
+      const canvas = qrArea.querySelector('canvas');
+      const img = qrArea.querySelector('img');
       const link = document.createElement('a');
       link.download = `yiu-attendance-qr-${Date.now()}.png`;
-      link.href = canvas.toDataURL();
-      link.click();
 
+      if (canvas) {
+        link.href = canvas.toDataURL();
+      } else if (img) {
+        link.href = img.src;
+      } else {
+        showToast('QR 코드를 찾을 수 없습니다.', 'error');
+        return;
+      }
+
+      link.click();
       showToast('QR 코드가 다운로드되었습니다.', 'success');
     }
 
