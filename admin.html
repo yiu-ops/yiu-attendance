@@ -158,6 +158,52 @@
         </div>
       </div>
 
+      <!-- 현재 회의 현황 요약 -->
+      <div id="currentStatusCard" class="glass-card rounded-3xl shadow-2xl p-6 mb-6 fade-in border-2 border-indigo-200 dark:border-indigo-800">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          </svg>
+          현재 회의 현황
+        </h2>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <!-- 회의 정보 -->
+          <div class="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl">
+            <div class="flex items-center gap-2 mb-2">
+              <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <span class="text-sm font-semibold text-indigo-700 dark:text-indigo-300">회의 정보</span>
+            </div>
+            <div class="space-y-1">
+              <p class="text-base font-bold text-gray-900 dark:text-white" id="statusMeetingTitle">-</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400" id="statusMeetingDesc">-</p>
+              <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                이벤트 ID: <span id="statusEventId" class="font-mono">-</span>
+              </p>
+            </div>
+          </div>
+          <!-- 위치 정보 -->
+          <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl">
+            <div class="flex items-center gap-2 mb-2">
+              <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <span class="text-sm font-semibold text-emerald-700 dark:text-emerald-300">위치 정보</span>
+            </div>
+            <div class="space-y-1">
+              <p class="text-sm text-gray-900 dark:text-white">
+                <span class="font-medium" id="statusLatLng">-</span>
+              </p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                허용 반경: <span class="font-bold text-emerald-600 dark:text-emerald-400" id="statusRadius">-</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 1. 회의 설정 (새 회의 + 회의 정보 + 보안 탭 통합) -->
       <div class="glass-card rounded-3xl shadow-2xl p-6 mb-6 slide-up">
         <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
@@ -637,6 +683,7 @@
           .withSuccessHandler(result => {
             if (result && result.success) {
               document.getElementById('currentEventId').textContent = result.currentEventId || 'N/A';
+              document.getElementById('statusEventId').textContent = result.currentEventId || 'N/A';
             }
           })
           .withFailureHandler(() => {})
@@ -646,6 +693,7 @@
           .then(result => {
             if (result && result.success) {
               document.getElementById('currentEventId').textContent = result.currentEventId || 'N/A';
+              document.getElementById('statusEventId').textContent = result.currentEventId || 'N/A';
             }
           })
           .catch(() => {});
@@ -993,7 +1041,16 @@
       if (result && result.success) {
         showToast('새 회의가 시작되었습니다!', 'success');
         document.getElementById('currentEventId').textContent = result.eventId || '생성됨';
+
+        // 새 회의 제목이 있으면 settings에도 반영
+        const newTitle = document.getElementById('newMeetingTitle').value.trim();
+        if (newTitle) {
+          state.settings.meeting_title = newTitle;
+          document.getElementById('meetingTitle').value = newTitle;
+        }
+
         document.getElementById('newMeetingTitle').value = '';
+        updateCurrentStatus();
         setTimeout(refreshAll, 1000);
       } else {
         showToast(result?.error || '새 회의 시작에 실패했습니다.', 'error');
@@ -1047,6 +1104,9 @@
           state.mapCircle.setRadius(radius);
         }
       }
+
+      // 현재 회의 현황 요약 갱신
+      updateCurrentStatus();
     }
 
     function switchMeetingSettingsTab(tab) {
@@ -1174,6 +1234,7 @@
             if (result && result.success) {
               state.settings = settings;
               showMsg('설정이 저장되었습니다!', 'success');
+              updateCurrentStatus();
             } else {
               showMsg('설정 저장에 실패했습니다.', 'error');
             }
@@ -1186,6 +1247,7 @@
             if (result && result.success) {
               state.settings = settings;
               showMsg('설정이 저장되었습니다!', 'success');
+              updateCurrentStatus();
             } else {
               showMsg('설정 저장에 실패했습니다.', 'error');
             }
@@ -1223,6 +1285,31 @@
 
     function showSettingsMessage(message, type) {
       showMessage('settingsMessage', message, type);
+    }
+
+    // ========================================
+    // 현재 회의 현황 요약
+    // ========================================
+
+    function updateCurrentStatus() {
+      const s = state.settings;
+
+      // 회의 정보
+      const title = s.meeting_title || '용인대학교 교직원 회의';
+      const desc = s.meeting_description || '출석 정보를 정확히 입력해주세요';
+      document.getElementById('statusMeetingTitle').textContent = title;
+      document.getElementById('statusMeetingDesc').textContent = desc;
+
+      // 이벤트 ID (currentEventId 요소에서 가져오기)
+      const eventId = document.getElementById('currentEventId').textContent;
+      document.getElementById('statusEventId').textContent = eventId || '-';
+
+      // 위치 정보
+      const lat = parseFloat(s.target_latitude) || 37.2420;
+      const lng = parseFloat(s.target_longitude) || 127.1775;
+      const radius = parseInt(s.location_radius) || 1200;
+      document.getElementById('statusLatLng').textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+      document.getElementById('statusRadius').textContent = `${radius}m`;
     }
 
     // ========================================
