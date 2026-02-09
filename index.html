@@ -57,6 +57,10 @@
     }
   </script>
 
+  <!-- Leaflet.js for map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <!-- html5-qrcode for QR scanning -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
@@ -160,6 +164,30 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
+
+    /* 위치 지도 */
+    #locationMap {
+      height: 250px;
+      width: 100%;
+      border-radius: 12px;
+      z-index: 0;
+    }
+
+    .location-map-card {
+      transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease;
+      overflow: hidden;
+    }
+
+    .location-map-card.collapsed {
+      max-height: 0;
+      opacity: 0;
+      margin: 0;
+    }
+
+    .location-map-card.expanded {
+      max-height: 600px;
+      opacity: 1;
+    }
   </style>
 </head>
 <body class="gradient-bg min-h-screen font-sans antialiased text-gray-900 dark:text-white transition-colors duration-300">
@@ -203,6 +231,28 @@
         <div class="flex items-center justify-center gap-3">
           <div class="spinner w-5 h-5"></div>
           <span class="font-medium text-gray-600 dark:text-gray-300">시스템을 준비하고 있습니다...</span>
+        </div>
+      </div>
+
+      <!-- 위치 지도 (거리 초과 시 표시) -->
+      <div id="locationMapCard" class="location-map-card collapsed mb-4">
+        <div class="p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <span class="font-semibold text-red-700 dark:text-red-400 text-sm">위치 비교</span>
+            </div>
+            <button onclick="toggleLocationMap()" class="text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          <div id="locationMap" class="mb-3"></div>
+          <div id="locationDebugInfo" class="text-xs text-red-600 dark:text-red-400 space-y-1"></div>
         </div>
       </div>
 
@@ -454,7 +504,8 @@
       currentTab: 'manual',
       deviceId: null,
       currentEventId: null,
-      preventProxy: false
+      preventProxy: false,
+      locationMap: null
     };
 
     // ========================================
@@ -662,10 +713,11 @@
       const distance = calculateDistance(userLat, userLng, targetLat, targetLng);
       const allowedRadius = calculateAllowedRadius(accuracy);
 
-      console.log(`위치: ${userLat}, ${userLng}, 거리: ${distance}m, 허용: ${allowedRadius}m`);
+      console.log(`위치: ${userLat}, ${userLng}, 거리: ${distance}m, 허용: ${allowedRadius}m, 정확도: ${accuracy}m`);
 
       if (distance <= allowedRadius) {
         state.isLocationValid = true;
+        hideLocationMap();
 
         let message = '위치 확인 완료';
         if (distance < 100) message += ' - 매우 가까움';
@@ -682,6 +734,7 @@
         state.isLocationValid = false;
         updateStatus(`회의실에서 ${Math.round(distance)}m 떨어져 있습니다`, 'error');
         showToast(`허용 거리(${allowedRadius}m)를 초과했습니다. 창가로 이동하거나 WiFi를 켜주세요.`, 'error');
+        showLocationMap(userLat, userLng, targetLat, targetLng, distance, allowedRadius, accuracy);
         validateForm();
       }
     }
@@ -777,6 +830,140 @@
 
       let radius = state.locationSettings.radius * multiplier;
       return Math.max(300, Math.min(2500, Math.round(radius)));
+    }
+
+    // ========================================
+    // 위치 지도 (거리 초과 시 표시)
+    // ========================================
+
+    function showLocationMap(userLat, userLng, targetLat, targetLng, distance, allowedRadius, accuracy) {
+      const mapCard = document.getElementById('locationMapCard');
+      mapCard.classList.remove('collapsed');
+      mapCard.classList.add('expanded');
+
+      // 지도 초기화 (이미 존재하면 제거 후 재생성)
+      if (state.locationMap) {
+        state.locationMap.remove();
+        state.locationMap = null;
+      }
+
+      // 약간의 지연 후 지도 생성 (CSS 트랜지션 대기)
+      setTimeout(() => {
+        const map = L.map('locationMap', { zoomControl: true, attributionControl: false });
+        state.locationMap = map;
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19
+        }).addTo(map);
+
+        // 회의실 마커 (파란색)
+        const targetIcon = L.divIcon({
+          className: '',
+          html: `<div style="
+            width: 32px; height: 32px; border-radius: 50%;
+            background: #4f46e5; border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+          "><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 32],
+          popupAnchor: [0, -32]
+        });
+
+        // 사용자 마커 (빨간색)
+        const userIcon = L.divIcon({
+          className: '',
+          html: `<div style="
+            width: 32px; height: 32px; border-radius: 50%;
+            background: #ef4444; border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+          "><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 32],
+          popupAnchor: [0, -32]
+        });
+
+        const targetMarker = L.marker([targetLat, targetLng], { icon: targetIcon })
+          .addTo(map)
+          .bindPopup(`<b>회의실</b><br>${targetLat.toFixed(6)}, ${targetLng.toFixed(6)}`);
+
+        const userMarker = L.marker([userLat, userLng], { icon: userIcon })
+          .addTo(map)
+          .bindPopup(`<b>내 위치</b><br>${userLat.toFixed(6)}, ${userLng.toFixed(6)}<br>정확도: ${Math.round(accuracy)}m`);
+
+        // 허용 반경 원 (파란색 반투명)
+        L.circle([targetLat, targetLng], {
+          radius: allowedRadius,
+          color: '#4f46e5',
+          fillColor: '#818cf8',
+          fillOpacity: 0.1,
+          weight: 2,
+          dashArray: '5, 5'
+        }).addTo(map);
+
+        // GPS 정확도 원 (빨간색 반투명)
+        L.circle([userLat, userLng], {
+          radius: accuracy,
+          color: '#ef4444',
+          fillColor: '#fca5a5',
+          fillOpacity: 0.1,
+          weight: 1,
+          dashArray: '3, 3'
+        }).addTo(map);
+
+        // 두 지점 사이 선
+        L.polyline([[userLat, userLng], [targetLat, targetLng]], {
+          color: '#f59e0b',
+          weight: 2,
+          dashArray: '8, 4'
+        }).addTo(map);
+
+        // 두 마커가 모두 보이도록 지도 범위 조정
+        const bounds = L.latLngBounds([[userLat, userLng], [targetLat, targetLng]]);
+        map.fitBounds(bounds, { padding: [40, 40] });
+
+        // 디버그 정보 표시
+        const debugInfo = document.getElementById('locationDebugInfo');
+        debugInfo.innerHTML = `
+          <div class="grid grid-cols-2 gap-2">
+            <div class="flex items-center gap-1">
+              <span class="inline-block w-3 h-3 rounded-full bg-red-500 flex-shrink-0"></span>
+              <span>내 위치: ${userLat.toFixed(6)}, ${userLng.toFixed(6)}</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="inline-block w-3 h-3 rounded-full bg-indigo-500 flex-shrink-0"></span>
+              <span>회의실: ${targetLat.toFixed(6)}, ${targetLng.toFixed(6)}</span>
+            </div>
+            <div>거리: <b>${Math.round(distance)}m</b></div>
+            <div>허용 반경: <b>${allowedRadius}m</b></div>
+            <div>GPS 정확도: <b>${Math.round(accuracy)}m</b></div>
+            <div>기본 반경: <b>${state.locationSettings.radius}m</b></div>
+          </div>
+          <p class="mt-2 text-red-500 dark:text-red-300 font-medium">
+            관리자에게 회의실 좌표 설정을 확인 요청하거나, WiFi를 켜고 창가에서 다시 시도해주세요.
+          </p>
+        `;
+      }, 100);
+    }
+
+    function hideLocationMap() {
+      const mapCard = document.getElementById('locationMapCard');
+      mapCard.classList.remove('expanded');
+      mapCard.classList.add('collapsed');
+    }
+
+    function toggleLocationMap() {
+      const mapCard = document.getElementById('locationMapCard');
+      if (mapCard.classList.contains('expanded')) {
+        hideLocationMap();
+      } else {
+        mapCard.classList.remove('collapsed');
+        mapCard.classList.add('expanded');
+        if (state.locationMap) {
+          setTimeout(() => state.locationMap.invalidateSize(), 400);
+        }
+      }
     }
 
     // ========================================
