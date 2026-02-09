@@ -64,6 +64,9 @@
   <!-- html5-qrcode for QR scanning -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
+  <!-- html2canvas for certificate capture -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
   <style>
     /* 커스텀 그라데이션 배경 */
     .gradient-bg {
@@ -187,6 +190,111 @@
     .location-map-card.expanded {
       max-height: 600px;
       opacity: 1;
+    }
+
+    /* 출석 확인증 카드 */
+    .certificate-card {
+      max-width: 400px;
+      margin: 0 auto;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      background: white;
+    }
+
+    .certificate-header {
+      background: linear-gradient(135deg, #10b981, #059669);
+      padding: 24px 20px;
+      text-align: center;
+      color: white;
+    }
+
+    .certificate-body {
+      padding: 20px;
+    }
+
+    .certificate-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .certificate-grid-item {
+      padding: 10px;
+      background: #f9fafb;
+      border-radius: 8px;
+    }
+
+    .certificate-grid-item .label {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 2px;
+    }
+
+    .certificate-grid-item .value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .certificate-meeting {
+      margin-top: 12px;
+      padding: 10px;
+      background: #eef2ff;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .certificate-meeting .label {
+      font-size: 11px;
+      color: #6366f1;
+      margin-bottom: 2px;
+    }
+
+    .certificate-meeting .value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #4338ca;
+    }
+
+    .certificate-footer {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px dashed #e5e7eb;
+      text-align: center;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .certificate-confirm-number {
+      margin: 12px 0 16px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+
+    /* 내 출석 확인 섹션 */
+    .attendance-check-toggle {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .attendance-check-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease, padding 0.3s ease;
+    }
+
+    .attendance-check-content.expanded {
+      max-height: 800px;
+    }
+
+    .attendance-check-result {
+      transition: all 0.3s ease;
     }
   </style>
 </head>
@@ -476,16 +584,59 @@
         </form>
       </div>
 
-      <!-- 완료 메시지 -->
+      <!-- 출석 확인증 -->
       <div id="completionMessage" class="hidden mt-6">
-        <div class="text-center p-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl text-white">
-          <div class="w-20 h-20 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center animate-bounce-slow">
-            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-            </svg>
+        <div id="certificateCard" class="certificate-card">
+          <!-- 확인증 헤더 -->
+          <div class="certificate-header">
+            <div class="w-16 h-16 mx-auto mb-3 bg-white/20 rounded-full flex items-center justify-center">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold mb-1">출석 확인증</h3>
+            <div class="certificate-confirm-number" id="certConfirmNumber">------</div>
           </div>
-          <h3 class="text-2xl font-bold mb-2">출석 완료!</h3>
-          <p id="completionDetails" class="text-green-100 whitespace-pre-line"></p>
+          <!-- 확인증 본문 -->
+          <div class="certificate-body">
+            <div class="certificate-grid">
+              <div class="certificate-grid-item">
+                <div class="label">성명</div>
+                <div class="value" id="certName">-</div>
+              </div>
+              <div class="certificate-grid-item">
+                <div class="label">소속</div>
+                <div class="value" id="certDept">-</div>
+              </div>
+              <div class="certificate-grid-item">
+                <div class="label">출석 시간</div>
+                <div class="value" id="certTime">-</div>
+              </div>
+              <div class="certificate-grid-item">
+                <div class="label">인증 방식</div>
+                <div class="value" id="certMethod">-</div>
+              </div>
+            </div>
+            <div class="certificate-meeting">
+              <div class="label">회의명</div>
+              <div class="value" id="certMeeting">-</div>
+            </div>
+            <div class="certificate-footer">
+              용인대학교 출석 시스템
+            </div>
+          </div>
+        </div>
+        <!-- 확인증 저장 버튼 -->
+        <div class="text-center mt-4">
+          <button
+            onclick="captureAttendanceCertificate()"
+            class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            확인증 저장
+          </button>
         </div>
       </div>
 
@@ -494,6 +645,58 @@
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-2xl text-center max-w-sm mx-4">
           <div class="spinner w-12 h-12 mx-auto mb-4"></div>
           <p id="loadingText" class="font-medium text-gray-700 dark:text-gray-300">처리중입니다...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 내 출석 확인 -->
+    <div class="glass-card rounded-3xl shadow-2xl mt-6 overflow-hidden animate-fade-in">
+      <div class="attendance-check-toggle flex items-center justify-between p-5" onclick="toggleAttendanceCheck()">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+            <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="font-bold text-gray-900 dark:text-white text-sm">내 출석 확인</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">이름과 소속으로 출석 여부를 조회합니다</p>
+          </div>
+        </div>
+        <svg id="attendanceCheckArrow" class="w-5 h-5 text-gray-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </div>
+      <div id="attendanceCheckContent" class="attendance-check-content">
+        <div class="px-5 pb-5 space-y-4">
+          <div>
+            <label for="checkName" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">성명</label>
+            <input
+              type="text"
+              id="checkName"
+              placeholder="홍길동"
+              maxlength="20"
+              class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none input-focus-ring transition-all duration-200 text-sm"
+            >
+          </div>
+          <div>
+            <label for="checkDept" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">소속</label>
+            <input
+              type="text"
+              id="checkDept"
+              placeholder="경영학과, 교무팀 등"
+              maxlength="50"
+              class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none input-focus-ring transition-all duration-200 text-sm"
+            >
+          </div>
+          <button
+            onclick="checkMyAttendance()"
+            id="checkAttendanceBtn"
+            class="w-full py-3 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 text-sm"
+          >
+            출석 조회
+          </button>
+          <div id="attendanceCheckResult"></div>
         </div>
       </div>
     </div>
@@ -1394,17 +1597,18 @@
 
       const nameValue = document.getElementById('name')?.value || document.getElementById('indoorName')?.value || '';
       const deptValue = document.getElementById('department')?.value || document.getElementById('indoorDepartment')?.value || '';
+      const now = new Date();
+      const methodText = state.locationMode === 'indoor' ? 'QR 코드' : 'GPS 위치';
+      const meetingTitle = document.getElementById('meetingTitle')?.textContent || '교직원 회의';
 
-      const details = [
-        `출석자: ${nameValue}`,
-        `소속: ${deptValue}`,
-        `시간: ${new Date().toLocaleString()}`,
-        `인증: ${state.locationMode === 'indoor' ? 'QR 코드' : 'GPS 위치'}`,
-        result.distance ? `거리: ${result.distance}m` : '',
-        result.emailSent ? '\n확인 이메일이 발송되었습니다.' : ''
-      ].filter(Boolean).join('\n');
+      // 확인증 카드 채우기
+      document.getElementById('certName').textContent = nameValue;
+      document.getElementById('certDept').textContent = deptValue;
+      document.getElementById('certTime').textContent = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('certMethod').textContent = methodText;
+      document.getElementById('certMeeting').textContent = meetingTitle;
+      document.getElementById('certConfirmNumber').textContent = generateConfirmationNumber(now);
 
-      document.getElementById('completionDetails').textContent = details;
       document.getElementById('completionMessage').classList.remove('hidden');
 
       // 폼 숨기기
@@ -1421,6 +1625,51 @@
 
       // 완료 메시지로 스크롤
       document.getElementById('completionMessage').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function generateConfirmationNumber(date) {
+      const yy = String(date.getFullYear()).slice(-2);
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const dd = String(date.getDate()).padStart(2, '0');
+      const rand = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+      return `${yy}${mm}${dd}-${rand}`;
+    }
+
+    function captureAttendanceCertificate() {
+      const card = document.getElementById('certificateCard');
+      if (!card) return;
+
+      if (typeof html2canvas === 'undefined') {
+        showToast('이미지 저장 기능을 불러올 수 없습니다.', 'error');
+        return;
+      }
+
+      html2canvas(card, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      }).then(canvas => {
+        try {
+          const link = document.createElement('a');
+          link.download = '출석확인증_' + new Date().toISOString().slice(0, 10) + '.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+          showToast('확인증이 저장되었습니다.', 'success');
+        } catch (err) {
+          // 다운로드 실패 시 새 창 폴백
+          const dataUrl = canvas.toDataURL('image/png');
+          const newWindow = window.open();
+          if (newWindow) {
+            newWindow.document.write('<img src="' + dataUrl + '" style="max-width:100%">');
+            newWindow.document.title = '출석 확인증';
+            showToast('새 창에서 이미지를 저장해주세요.', 'info');
+          } else {
+            showToast('팝업이 차단되었습니다. 팝업을 허용해주세요.', 'error');
+          }
+        }
+      }).catch(() => {
+        showToast('확인증 저장에 실패했습니다.', 'error');
+      });
     }
 
     // ========================================
@@ -1447,8 +1696,16 @@
     }
 
     function showAlreadyAttendedMessage() {
+      const meetingTitle = document.getElementById('meetingTitle')?.textContent || '교직원 회의';
+
+      document.getElementById('certName').textContent = '-';
+      document.getElementById('certDept').textContent = '-';
+      document.getElementById('certTime').textContent = '확인 불가';
+      document.getElementById('certMethod').textContent = '기기 인증';
+      document.getElementById('certMeeting').textContent = meetingTitle;
+      document.getElementById('certConfirmNumber').textContent = '이미 출석 완료';
+
       document.getElementById('completionMessage').classList.remove('hidden');
-      document.getElementById('completionDetails').textContent = '이 기기에서 이미 출석이 완료되었습니다.';
       document.getElementById('outdoorSection').classList.add('hidden');
       document.getElementById('indoorSection').classList.add('hidden');
       updateSubmitButton(false);
@@ -1570,6 +1827,130 @@
         overlay.classList.remove('hidden');
       } else {
         overlay.classList.add('hidden');
+      }
+    }
+
+    // ========================================
+    // 내 출석 확인
+    // ========================================
+
+    function toggleAttendanceCheck() {
+      const content = document.getElementById('attendanceCheckContent');
+      const arrow = document.getElementById('attendanceCheckArrow');
+
+      if (content.classList.contains('expanded')) {
+        content.classList.remove('expanded');
+        arrow.style.transform = 'rotate(0deg)';
+      } else {
+        content.classList.add('expanded');
+        arrow.style.transform = 'rotate(180deg)';
+      }
+    }
+
+    function checkMyAttendance() {
+      const name = document.getElementById('checkName').value.trim();
+      const department = document.getElementById('checkDept').value.trim();
+
+      if (!name || name.length < 2) {
+        showToast('성명을 2자 이상 입력해주세요.', 'warning');
+        return;
+      }
+      if (!department || department.length < 2) {
+        showToast('소속을 2자 이상 입력해주세요.', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('checkAttendanceBtn');
+      btn.disabled = true;
+      btn.textContent = '조회 중...';
+
+      callGoogleScript('checkAttendance', { name, department })
+        .then(result => {
+          btn.disabled = false;
+          btn.textContent = '출석 조회';
+          displayAttendanceCheckResult(result);
+        })
+        .catch(error => {
+          btn.disabled = false;
+          btn.textContent = '출석 조회';
+          displayAttendanceCheckResult({ success: false, error: '서버 연결에 실패했습니다.' });
+        });
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function displayAttendanceCheckResult(result) {
+      const container = document.getElementById('attendanceCheckResult');
+
+      if (result && result.success && result.found) {
+        const record = result.record;
+        container.innerHTML = `
+          <div class="attendance-check-result p-4 rounded-xl bg-green-50 dark:bg-green-900/30 border-2 border-green-200 dark:border-green-800">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+              <span class="font-bold text-green-800 dark:text-green-400 text-sm">출석이 확인되었습니다</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="p-2 bg-white dark:bg-slate-700 rounded-lg">
+                <div class="text-gray-500 dark:text-gray-400">성명</div>
+                <div class="font-semibold text-gray-900 dark:text-white">${escapeHtml(record.name)}</div>
+              </div>
+              <div class="p-2 bg-white dark:bg-slate-700 rounded-lg">
+                <div class="text-gray-500 dark:text-gray-400">소속</div>
+                <div class="font-semibold text-gray-900 dark:text-white">${escapeHtml(record.department)}</div>
+              </div>
+              <div class="p-2 bg-white dark:bg-slate-700 rounded-lg">
+                <div class="text-gray-500 dark:text-gray-400">출석 시간</div>
+                <div class="font-semibold text-gray-900 dark:text-white">${escapeHtml(record.time)}</div>
+              </div>
+              <div class="p-2 bg-white dark:bg-slate-700 rounded-lg">
+                <div class="text-gray-500 dark:text-gray-400">회의명</div>
+                <div class="font-semibold text-gray-900 dark:text-white">${escapeHtml(record.meetingTitle || '-')}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (result && result.success && !result.found) {
+        container.innerHTML = `
+          <div class="attendance-check-result p-4 rounded-xl bg-amber-50 dark:bg-amber-900/30 border-2 border-amber-200 dark:border-amber-800">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-bold text-amber-800 dark:text-amber-400 text-sm">출석 기록을 찾을 수 없습니다</p>
+                <p class="text-xs text-amber-600 dark:text-amber-500 mt-1">이름과 소속이 정확한지 확인해주세요</p>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        const errorMsg = (result && result.error) ? result.error : '조회 중 오류가 발생했습니다.';
+        container.innerHTML = `
+          <div class="attendance-check-result p-4 rounded-xl bg-red-50 dark:bg-red-900/30 border-2 border-red-200 dark:border-red-800">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-bold text-red-800 dark:text-red-400 text-sm">조회 실패</p>
+                <p class="text-xs text-red-600 dark:text-red-500 mt-1">${escapeHtml(errorMsg)}</p>
+              </div>
+            </div>
+          </div>
+        `;
       }
     }
 

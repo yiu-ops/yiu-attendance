@@ -122,6 +122,14 @@ function doGet(e) {
             var token = parsedParams && parsedParams.token ? parsedParams.token : '';
             result = validateQRToken(token);
             break;
+          // 출석 조회 API
+          case 'checkAttendance':
+            if (parsedParams && parsedParams.name && parsedParams.department) {
+              result = checkAttendance(parsedParams.name, parsedParams.department);
+            } else {
+              result = { success: false, error: '이름과 소속을 모두 입력해주세요.' };
+            }
+            break;
           // 다운로드 관련 API
           case 'getAttendanceForDownload':
             var startDate = parsedParams && parsedParams.startDate ? parsedParams.startDate : null;
@@ -616,6 +624,71 @@ function logDeviceAttempt(data, deviceId, reason, eventId) {
 
   } catch (error) {
     console.error('기기 로그 기록 오류:', error);
+  }
+}
+
+// ==============================================
+// 출석 조회
+// ==============================================
+
+/**
+ * 출석 조회 (이름 + 소속으로 검색)
+ * @param {string} name - 성명
+ * @param {string} department - 소속
+ * @returns {object} - { success, found, record }
+ */
+function checkAttendance(name, department) {
+  try {
+    if (!name || !department) {
+      return { success: false, error: '이름과 소속을 입력해주세요.' };
+    }
+
+    var trimmedName = name.trim();
+    var trimmedDept = department.trim();
+
+    var spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var sheet = spreadsheet.getSheetByName(SHEET_NAMES.ATTENDANCE);
+
+    if (!sheet || sheet.getLastRow() <= 1) {
+      return { success: true, found: false };
+    }
+
+    var settings = getSettings();
+    var currentEventId = settings.current_event_id;
+    var meetingTitle = settings.meeting_title || '교직원 회의';
+
+    var data = sheet.getDataRange().getValues();
+
+    // 현재 이벤트에서 이름+소속이 일치하는 최신 기록 검색
+    for (var i = data.length - 1; i >= 1; i--) {
+      var row = data[i];
+      var rowName = (row[0] || '').toString().trim();
+      var rowDept = (row[1] || '').toString().trim();
+      var rowEventId = (row[10] || '').toString();
+
+      if (rowEventId === currentEventId && rowName === trimmedName && rowDept === trimmedDept) {
+        return {
+          success: true,
+          found: true,
+          record: {
+            name: rowName,
+            department: rowDept,
+            time: formatDateTime(new Date(row[3])),
+            distance: row[6] ? Math.round(parseFloat(row[6])) + 'm' : '-',
+            meetingTitle: meetingTitle
+          }
+        };
+      }
+    }
+
+    return { success: true, found: false };
+
+  } catch (error) {
+    console.error('출석 조회 오류:', error);
+    return {
+      success: false,
+      error: '출석 조회 중 오류가 발생했습니다.'
+    };
   }
 }
 
