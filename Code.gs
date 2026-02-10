@@ -799,8 +799,6 @@ function getAttendanceStats() {
     // 출석 데이터 분석
     if (attendanceSheet && attendanceSheet.getLastRow() > 1) {
       var attendanceData = attendanceSheet.getDataRange().getValues();
-      stats.totalAttendees = attendanceData.length - 1;
-
       var currentEventCount = 0;
       var recentAttendees = [];
       var hourlyStats = {};
@@ -826,6 +824,7 @@ function getAttendanceStats() {
         }
       }
 
+      stats.totalAttendees = currentEventCount;
       stats.currentEventAttendees = currentEventCount;
       stats.recentAttendees = recentAttendees.reverse();
       stats.hourlyStats = hourlyStats;
@@ -834,8 +833,6 @@ function getAttendanceStats() {
     // 차단된 기기 수 및 목록
     if (deviceSheet && deviceSheet.getLastRow() > 1) {
       var deviceData = deviceSheet.getDataRange().getValues();
-      stats.deviceBlocked = deviceData.length - 1;
-
       var blockedDevices = [];
       for (var i = 1; i < deviceData.length; i++) {
         var row = deviceData[i];
@@ -851,12 +848,22 @@ function getAttendanceStats() {
         }
       }
 
+      stats.deviceBlocked = blockedDevices.length;
       stats.blockedDevices = blockedDevices.reverse();
     }
 
-    // 이메일 발송 수 조회
+    // 이메일 발송 수 조회 (현재 이벤트 기준)
     var emailSheet = spreadsheet.getSheetByName(SHEET_NAMES.EMAIL_LOG);
-    stats.emailsSent = (emailSheet && emailSheet.getLastRow() > 1) ? emailSheet.getLastRow() - 1 : 0;
+    if (emailSheet && emailSheet.getLastRow() > 1) {
+      var emailData = emailSheet.getDataRange().getValues();
+      var emailCount = 0;
+      for (var i = 1; i < emailData.length; i++) {
+        if (emailData[i][4] === currentEventId) {
+          emailCount++;
+        }
+      }
+      stats.emailsSent = emailCount;
+    }
 
     return {
       success: true,
