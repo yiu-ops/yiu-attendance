@@ -19,7 +19,9 @@ const DEFAULT_SETTINGS = {
   max_attendance_per_event: '1000',
   session_timeout_hours: '24',
   qr_token_validity_minutes: '15',
-  rate_limit_per_minute: '5'
+  rate_limit_per_minute: '5',
+  location_mode: 'outdoor',
+  prevent_proxy_attendance: 'false'
 };
 
 // 시트 이름

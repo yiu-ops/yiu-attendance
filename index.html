@@ -739,7 +739,8 @@
       deviceId: null,
       currentEventId: null,
       preventProxy: false,
-      locationMap: null
+      locationMap: null,
+      qrEntryFlag: false
     };
 
     // ========================================
@@ -755,6 +756,10 @@
 
     function initializeSystem() {
       console.log('시스템 초기화 시작');
+
+      // QR 코드 진입 감지
+      const urlParams = new URLSearchParams(window.location.search);
+      state.qrEntryFlag = urlParams.get('qr') === '1';
 
       // 기기 ID 생성/조회
       state.deviceId = getDeviceId();
@@ -904,6 +909,11 @@
       const newMode = settings.location_mode || 'outdoor';
       state.locationMode = newMode;
       applyLocationMode(newMode);
+
+      // QR로 진입한 사용자: 실내 모드일 때 자동 인증
+      if (newMode === 'indoor' && state.qrEntryFlag && !state.isQrVerified && !state.isCompleted) {
+        handleIndoorQrVerified();
+      }
     }
 
     function applyLocationMode(mode) {

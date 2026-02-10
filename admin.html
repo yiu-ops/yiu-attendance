@@ -827,13 +827,14 @@
     function generateQRCode() {
       // 출석 페이지 URL 기반 QR 코드 생성 (회의 종료까지 유지)
       const attendanceUrl = window.location.href.replace(/\/admin\.html.*$/, '/index.html');
+      const qrUrl = attendanceUrl + '?qr=1';
 
       const qrArea = document.getElementById('qrCodeArea');
       qrArea.innerHTML = '';
 
       try {
         state.qrInstance = new QRCode(qrArea, {
-          text: attendanceUrl,
+          text: qrUrl,
           width: 200,
           height: 200,
           colorDark: '#1e1b4b',
@@ -846,7 +847,7 @@
         return;
       }
 
-      state.currentQRToken = attendanceUrl;
+      state.currentQRToken = qrUrl;
 
       const meetingTitle = document.getElementById('meetingTitle')?.value ||
                            state.settings.meeting_title || '회의';
