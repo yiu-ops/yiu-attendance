@@ -875,15 +875,13 @@
       callGoogleScript('getSettings', null)
         .then(result => {
           if (result && typeof result === 'object') {
-            showToast('[디버그] mode=' + (result.location_mode || 'undefined'), 'info');
             updateSettingsFromServer(result);
           } else {
-            showToast('[디버그] 설정 응답이 객체가 아님', 'error');
             applyLocationMode('outdoor');
           }
         })
         .catch(err => {
-          showToast('[디버그] 설정 로드 실패: ' + err.message, 'error');
+          console.log('설정 로드 실패, 기본값 사용');
           applyLocationMode('outdoor');
         });
     }
@@ -909,7 +907,6 @@
 
       // 출석 모드 적용
       const newMode = settings.location_mode || 'outdoor';
-      console.log('[DEBUG] location_mode 원본값:', settings.location_mode, '→ 적용:', newMode);
       state.locationMode = newMode;
       applyLocationMode(newMode);
 
@@ -1356,8 +1353,8 @@
       document.getElementById('qrSuccessBadge').classList.remove('hidden');
       document.getElementById('qrSessionInfo').textContent = '출석 인증이 완료되었습니다';
 
-      // QR 스캐너 영역 축소
-      document.getElementById('qrControls').classList.add('hidden');
+      // QR 스캐너 영역 전체 숨김 (안내 문구 + 스캐너 + 버튼)
+      document.getElementById('indoorQrArea').classList.add('hidden');
 
       updateStatus('QR 인증 완료! 정보를 입력하고 출석하세요.', 'ready');
       showToast('QR 코드 인증 완료! 아래 정보를 입력해주세요.', 'success');
