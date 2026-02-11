@@ -874,16 +874,16 @@
     function loadSettingsFromServer() {
       callGoogleScript('getSettings', null)
         .then(result => {
-          console.log('[DEBUG] 서버 설정 응답:', JSON.stringify(result));
           if (result && typeof result === 'object') {
+            showToast('[디버그] mode=' + (result.location_mode || 'undefined'), 'info');
             updateSettingsFromServer(result);
           } else {
-            console.warn('[DEBUG] 설정이 객체가 아님, outdoor 폴백');
+            showToast('[디버그] 설정 응답이 객체가 아님', 'error');
             applyLocationMode('outdoor');
           }
         })
         .catch(err => {
-          console.error('[DEBUG] 설정 로드 실패:', err);
+          showToast('[디버그] 설정 로드 실패: ' + err.message, 'error');
           applyLocationMode('outdoor');
         });
     }
