@@ -1733,7 +1733,7 @@
       }
 
       // fetch 방식 시도 → 실패 시 JSONP 폴백
-      return callViaFetch(url).catch(() => callViaJsonp(url));
+      return callViaJsonp(url).catch(() => callViaFetch(url));
     }
 
     function callViaFetch(baseUrl) {

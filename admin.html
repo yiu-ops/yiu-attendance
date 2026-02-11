@@ -1431,7 +1431,7 @@
         url += `&params=${encodeURIComponent(JSON.stringify(params))}`;
       }
 
-      return callViaFetch(url).catch(() => callViaJsonp(url));
+      return callViaJsonp(url).catch(() => callViaFetch(url));
     }
 
     function callViaFetch(baseUrl) {
