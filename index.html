@@ -874,14 +874,16 @@
     function loadSettingsFromServer() {
       callGoogleScript('getSettings', null)
         .then(result => {
+          console.log('[DEBUG] 서버 설정 응답:', JSON.stringify(result));
           if (result && typeof result === 'object') {
             updateSettingsFromServer(result);
           } else {
+            console.warn('[DEBUG] 설정이 객체가 아님, outdoor 폴백');
             applyLocationMode('outdoor');
           }
         })
         .catch(err => {
-          console.log('설정 로드 실패, 기본값 사용');
+          console.error('[DEBUG] 설정 로드 실패:', err);
           applyLocationMode('outdoor');
         });
     }
@@ -907,6 +909,7 @@
 
       // 출석 모드 적용
       const newMode = settings.location_mode || 'outdoor';
+      console.log('[DEBUG] location_mode 원본값:', settings.location_mode, '→ 적용:', newMode);
       state.locationMode = newMode;
       applyLocationMode(newMode);
 
