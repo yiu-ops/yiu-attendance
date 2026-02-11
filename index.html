@@ -1726,10 +1726,33 @@
     }
 
     // ========================================
-    // Google Apps Script 통신 (JSONP)
+    // Google Apps Script 통신 (fetch + JSONP 폴백)
     // ========================================
 
     function callGoogleScript(method, params) {
+      let url = `${CONFIG.BACKEND_URL}?method=${encodeURIComponent(method)}`;
+      if (params) {
+        url += `&params=${encodeURIComponent(JSON.stringify(params))}`;
+      }
+
+      // fetch 방식 시도 → 실패 시 JSONP 폴백
+      return callViaFetch(url).catch(() => callViaJsonp(url));
+    }
+
+    function callViaFetch(baseUrl) {
+      const url = baseUrl + '&callback=_cb';
+      return fetch(url, { redirect: 'follow' })
+        .then(res => {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.text();
+        })
+        .then(text => {
+          const json = text.replace(/^_cb\(/, '').replace(/\);?\s*$/, '');
+          return JSON.parse(json);
+        });
+    }
+
+    function callViaJsonp(baseUrl) {
       return new Promise((resolve, reject) => {
         const callbackName = `gasCallback_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
         const timeoutId = setTimeout(() => {
@@ -1756,12 +1779,7 @@
           reject(new Error('네트워크 오류'));
         };
 
-        let url = `${CONFIG.BACKEND_URL}?method=${encodeURIComponent(method)}&callback=${callbackName}`;
-        if (params) {
-          url += `&params=${encodeURIComponent(JSON.stringify(params))}`;
-        }
-
-        script.src = url;
+        script.src = baseUrl + `&callback=${callbackName}`;
         document.head.appendChild(script);
       });
     }
