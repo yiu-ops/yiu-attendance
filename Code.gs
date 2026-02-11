@@ -36,10 +36,7 @@ const SHEET_NAMES = {
   RATE_LIMIT: 'rate_limit'
 };
 
-// 캐시 시스템
-var settingsCache = null;
-var cacheTimestamp = 0;
-const CACHE_DURATION = 300;
+// 캐시 제거됨 - 인스턴스별 캐시는 이벤트 ID 불일치 유발
 
 /**
  * 웹 앱 진입점 - GET 요청
@@ -970,12 +967,6 @@ function authenticateAdmin(password) {
  * 설정 조회
  */
 function getSettings() {
-  var now = Date.now();
-
-  if (settingsCache && (now - cacheTimestamp) < CACHE_DURATION * 1000) {
-    return settingsCache;
-  }
-
   try {
     var spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
     var sheet = getOrCreateSheet(spreadsheet, SHEET_NAMES.SETTINGS, ['키', '값']);
@@ -1000,13 +991,10 @@ function getSettings() {
       finalSettings[key] = settings[key];
     }
 
-    settingsCache = finalSettings;
-    cacheTimestamp = now;
-
     return finalSettings;
 
   } catch (error) {
-    return settingsCache || DEFAULT_SETTINGS;
+    return DEFAULT_SETTINGS;
   }
 }
 
@@ -1322,9 +1310,6 @@ function saveSettings(settings) {
       .setBackground('#4A5568')
       .setFontColor('white')
       .setFontWeight('bold');
-
-    settingsCache = null;
-    cacheTimestamp = 0;
 
     return {
       success: true,
