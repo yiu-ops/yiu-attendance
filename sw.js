@@ -7,7 +7,7 @@
  * - 오프라인 시 기본 페이지 제공
  */
 
-const CACHE_NAME = 'yiu-attendance-v1';
+const CACHE_NAME = 'yiu-attendance-v2';
 const OFFLINE_URL = 'offline.html';
 
 // 캐시할 정적 리소스
