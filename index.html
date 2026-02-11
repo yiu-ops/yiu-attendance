@@ -1596,20 +1596,28 @@
     function completeAttendance(result) {
       state.isCompleted = true;
 
-      // 출석 기록 저장 (대리 출석 방지용)
-      if (state.currentEventId) {
-        markAsAttended(state.currentEventId);
-      }
-      if (result.eventId) {
-        state.currentEventId = result.eventId;
-        markAsAttended(result.eventId);
-      }
-
       const nameValue = document.getElementById('name')?.value || document.getElementById('indoorName')?.value || '';
       const deptValue = document.getElementById('department')?.value || document.getElementById('indoorDepartment')?.value || '';
       const now = new Date();
       const methodText = state.locationMode === 'indoor' ? 'QR 코드' : 'GPS 위치';
       const meetingTitle = document.getElementById('meetingTitle')?.textContent || '교직원 회의';
+
+      // 출석 기록 저장 (대리 출석 방지용 + 확인증 정보)
+      const attendInfo = {
+        name: nameValue,
+        dept: deptValue,
+        time: now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+        method: methodText,
+        meeting: meetingTitle,
+        confirmNumber: generateConfirmationNumber(now)
+      };
+      if (state.currentEventId) {
+        markAsAttended(state.currentEventId, attendInfo);
+      }
+      if (result.eventId) {
+        state.currentEventId = result.eventId;
+        markAsAttended(result.eventId, attendInfo);
+      }
 
       // 확인증 카드 채우기
       document.getElementById('certName').textContent = nameValue;
@@ -1699,21 +1707,42 @@
       return localStorage.getItem('yiu_attended_' + eventId) === 'true';
     }
 
-    function markAsAttended(eventId) {
+    function markAsAttended(eventId, info) {
       if (eventId) {
         localStorage.setItem('yiu_attended_' + eventId, 'true');
+        if (info) {
+          localStorage.setItem('yiu_attended_info_' + eventId, JSON.stringify(info));
+        }
       }
     }
 
     function showAlreadyAttendedMessage() {
       const meetingTitle = document.getElementById('meetingTitle')?.textContent || '교직원 회의';
 
-      document.getElementById('certName').textContent = '-';
-      document.getElementById('certDept').textContent = '-';
-      document.getElementById('certTime').textContent = '확인 불가';
-      document.getElementById('certMethod').textContent = '기기 인증';
-      document.getElementById('certMeeting').textContent = meetingTitle;
-      document.getElementById('certConfirmNumber').textContent = '이미 출석 완료';
+      // 저장된 출석 정보 불러오기
+      let info = null;
+      if (state.currentEventId) {
+        try {
+          const saved = localStorage.getItem('yiu_attended_info_' + state.currentEventId);
+          if (saved) info = JSON.parse(saved);
+        } catch (e) {}
+      }
+
+      if (info) {
+        document.getElementById('certName').textContent = info.name;
+        document.getElementById('certDept').textContent = info.dept;
+        document.getElementById('certTime').textContent = info.time;
+        document.getElementById('certMethod').textContent = info.method;
+        document.getElementById('certMeeting').textContent = info.meeting || meetingTitle;
+        document.getElementById('certConfirmNumber').textContent = info.confirmNumber || '출석 완료';
+      } else {
+        document.getElementById('certName').textContent = '-';
+        document.getElementById('certDept').textContent = '-';
+        document.getElementById('certTime').textContent = '-';
+        document.getElementById('certMethod').textContent = '-';
+        document.getElementById('certMeeting').textContent = meetingTitle;
+        document.getElementById('certConfirmNumber').textContent = '이미 출석 완료';
+      }
 
       document.getElementById('completionMessage').classList.remove('hidden');
       document.getElementById('outdoorSection').classList.add('hidden');
