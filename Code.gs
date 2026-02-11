@@ -4,7 +4,7 @@
 // ==============================================
 
 // 관리자 설정 (배포 전 수정 필요)
-const SPREADSHEET_ID = '1F8qA9r-sd4T48KwtgoVsp2kZqJG3iZgPR8bWFLy9QJw';
+const SPREADSHEET_ID = '1J88woOKMJQNds9GH2fXMyAOkfZmdmeyIFzMHprsbRVw';
 
 // 기본 설정값
 const DEFAULT_SETTINGS = {
