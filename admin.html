@@ -543,7 +543,13 @@
 
     document.addEventListener('DOMContentLoaded', function() {
       initializeDarkMode();
-      document.getElementById('adminPassword').focus();
+
+      // 세션 내 로그인 상태 복원
+      if (sessionStorage.getItem('yiu_admin_auth') === 'true') {
+        loginSuccess();
+      } else {
+        document.getElementById('adminPassword').focus();
+      }
     });
 
     function initializeDarkMode() {
@@ -604,13 +610,11 @@
 
     function loginSuccess() {
       state.isLoggedIn = true;
-      showMessage('loginMessage', '로그인 성공!', 'success');
+      sessionStorage.setItem('yiu_admin_auth', 'true');
 
-      setTimeout(() => {
-        document.getElementById('loginSection').classList.add('hidden');
-        document.getElementById('adminDashboard').classList.remove('hidden');
-        initializeDashboard();
-      }, 500);
+      document.getElementById('loginSection').classList.add('hidden');
+      document.getElementById('adminDashboard').classList.remove('hidden');
+      initializeDashboard();
     }
 
     function loginFailure() {
@@ -623,6 +627,7 @@
       if (!confirm('로그아웃 하시겠습니까?')) return;
 
       state.isLoggedIn = false;
+      sessionStorage.removeItem('yiu_admin_auth');
       if (state.refreshInterval) clearInterval(state.refreshInterval);
 
       document.getElementById('adminDashboard').classList.add('hidden');
