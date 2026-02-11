@@ -378,7 +378,7 @@
       <!-- ===================== -->
       <!-- 실외 모드 (GPS 기반) -->
       <!-- ===================== -->
-      <div id="outdoorSection" class="tab-content">
+      <div id="outdoorSection" class="tab-content hidden">
         <form id="attendanceForm" class="space-y-5">
           <!-- 성명 -->
           <div>
@@ -771,11 +771,11 @@
       state.isSystemReady = true;
       updateStatus('설정을 불러오고 있습니다...', 'checking');
 
-      // 백그라운드에서 설정 로드 (모드 적용 포함)
-      setTimeout(loadSettingsFromServer, 500);
+      // 설정 즉시 로드 (모드 적용 포함)
+      loadSettingsFromServer();
 
       // 현재 이벤트 ID 조회
-      setTimeout(fetchCurrentEventId, 800);
+      fetchCurrentEventId();
 
       console.log('시스템 초기화 완료');
     }
