@@ -9,7 +9,7 @@ const SPREADSHEET_ID = '1J88woOKMJQNds9GH2fXMyAOkfZmdmeyIFzMHprsbRVw';
 // 기본 설정값
 const DEFAULT_SETTINGS = {
   meeting_title: '용인대학교 교직원 회의',
-  meeting_description: '출석 정보를 정확히 입력해주세요',
+  meeting_description: '출석 정보를 정확히 입력해 주세요',
   target_latitude: '37.2420',
   target_longitude: '127.1775',
   location_radius: '1200',
@@ -126,7 +126,7 @@ function doGet(e) {
             if (parsedParams && parsedParams.name && parsedParams.department) {
               result = checkAttendance(parsedParams.name, parsedParams.department);
             } else {
-              result = { success: false, error: '이름과 소속을 모두 입력해주세요.' };
+              result = { success: false, error: '이름과 소속을 모두 입력해 주세요.' };
             }
             break;
           // 다운로드 관련 API
@@ -234,7 +234,7 @@ function checkRateLimit(deviceId) {
       return {
         allowed: false,
         remaining: 0,
-        message: '너무 많은 요청이 감지되었습니다. 1분 후 다시 시도해주세요.'
+        message: '너무 많은 요청이 감지되었습니다. 1분 후 다시 시도해 주세요.'
       };
     }
 
@@ -528,7 +528,7 @@ function saveAttendanceImproved(data) {
     logError('saveAttendance', error, data);
     return {
       success: false,
-      error: '출석 체크 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+      error: '출석 체크 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'
     };
   }
 }
@@ -542,11 +542,11 @@ function validateAttendanceData(data) {
   }
 
   if (!data.name || data.name.trim().length < 2) {
-    return { valid: false, error: '이름을 2자 이상 입력해주세요.' };
+    return { valid: false, error: '이름을 2자 이상 입력해 주세요.' };
   }
 
   if (!data.department || data.department.trim().length < 2) {
-    return { valid: false, error: '소속을 2자 이상 입력해주세요.' };
+    return { valid: false, error: '소속을 2자 이상 입력해 주세요.' };
   }
 
   // 이메일은 선택사항 - 입력된 경우에만 형식 검증
@@ -648,7 +648,7 @@ function logDeviceAttempt(data, deviceId, reason, eventId) {
 function checkAttendance(name, department) {
   try {
     if (!name || !department) {
-      return { success: false, error: '이름과 소속을 입력해주세요.' };
+      return { success: false, error: '이름과 소속을 입력해 주세요.' };
     }
 
     var trimmedName = name.trim();
@@ -1539,7 +1539,7 @@ function testEmailSystem() {
     if (!settings.notification_email) {
       return {
         success: false,
-        error: '알림 이메일을 먼저 설정해주세요.'
+        error: '알림 이메일을 먼저 설정해 주세요.'
       };
     }
 

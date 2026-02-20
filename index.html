@@ -1029,7 +1029,7 @@
       switch(error.code) {
         case error.PERMISSION_DENIED:
           message = '위치 권한이 필요합니다';
-          toastMsg = '브라우저에서 위치 권한을 허용해주세요.';
+          toastMsg = '브라우저에서 위치 권한을 허용해 주세요.';
           break;
         case error.POSITION_UNAVAILABLE:
           message = 'GPS 신호가 약합니다';
@@ -1037,7 +1037,7 @@
           break;
         case error.TIMEOUT:
           message = '위치 확인 시간 초과';
-          toastMsg = '다시 시도해주세요.';
+          toastMsg = '다시 시도해 주세요.';
           break;
       }
 
@@ -1222,7 +1222,7 @@
             <div>기본 반경: <b>${state.locationSettings.radius}m</b></div>
           </div>
           <p class="mt-2 text-red-500 dark:text-red-300 font-medium">
-            관리자에게 회의실 좌표 설정을 확인 요청하거나, WiFi를 켜고 창가에서 다시 시도해주세요.
+            관리자에게 회의실 좌표 설정을 확인 요청하거나, WiFi를 켜고 창가에서 다시 시도해 주세요.
           </p>
         `;
       }, 100);
@@ -1272,7 +1272,7 @@
         onQRCodeError
       ).catch(err => {
         console.error('QR 스캐너 시작 실패:', err);
-        showToast('카메라를 사용할 수 없습니다. 권한을 확인해주세요.', 'error');
+        showToast('카메라를 사용할 수 없습니다. 권한을 확인해 주세요.', 'error');
         document.getElementById('startScanBtn').classList.remove('hidden');
         document.getElementById('stopScanBtn').classList.add('hidden');
       });
@@ -1336,7 +1336,7 @@
       document.getElementById('indoorQrArea').classList.add('hidden');
 
       updateStatus('QR 인증 완료! 정보를 입력하고 출석하세요.', 'ready');
-      showToast('QR 코드 인증 완료! 아래 정보를 입력해주세요.', 'success');
+      showToast('QR 코드 인증 완료! 아래 정보를 입력해 주세요.', 'success');
 
       // 폼 활성화 검증
       validateIndoorForm();
@@ -1362,7 +1362,7 @@
       if (fieldName === 'email') {
         if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
           isValid = false;
-          message = '올바른 이메일 형식을 입력해주세요';
+          message = '올바른 이메일 형식을 입력해 주세요';
         }
       } else {
         if (!value) {
@@ -1370,7 +1370,7 @@
           message = '필수 항목입니다';
         } else if (value.length < 2) {
           isValid = false;
-          message = '2자 이상 입력해주세요';
+          message = '2자 이상 입력해 주세요';
         }
       }
 
@@ -1419,7 +1419,7 @@
         textEl.textContent = '출석 체크하기';
       } else {
         btn.disabled = true;
-        textEl.textContent = '정보를 입력해주세요';
+        textEl.textContent = '정보를 입력해 주세요';
       }
     }
 
@@ -1449,7 +1449,7 @@
       if (state.isSubmitting || state.isCompleted) return;
 
       if (!state.isQrVerified) {
-        showToast('QR 코드를 먼저 스캔해주세요.', 'warning');
+        showToast('QR 코드를 먼저 스캔해 주세요.', 'warning');
         return;
       }
 
@@ -1461,7 +1461,7 @@
       };
 
       if (!formData.name || !formData.department) {
-        showToast('성명과 소속을 입력해주세요.', 'warning');
+        showToast('성명과 소속을 입력해 주세요.', 'warning');
         return;
       }
 
@@ -1489,7 +1489,7 @@
         textEl.textContent = '출석 체크하기';
       } else {
         btn.disabled = true;
-        textEl.textContent = '정보를 입력해주세요';
+        textEl.textContent = '정보를 입력해 주세요';
       }
     }
 
@@ -1516,7 +1516,7 @@
           error => {
             state.isSubmitting = false;
             showLoading(false);
-            showToast('위치 확인에 실패했습니다. 다시 시도해주세요.', 'error');
+            showToast('위치 확인에 실패했습니다. 다시 시도해 주세요.', 'error');
             updateSubmitButton(true);
           }
         );
@@ -1550,7 +1550,7 @@
 
             if (state.locationMode === 'outdoor' && (message.includes('위치') || message.includes('회의실'))) {
               state.isLocationValid = false;
-              updateStatus('위치를 다시 확인해주세요', 'checking');
+              updateStatus('위치를 다시 확인해 주세요', 'checking');
             }
 
             if (state.locationMode === 'indoor') {
@@ -1563,7 +1563,7 @@
         .catch(error => {
           state.isSubmitting = false;
           showLoading(false);
-          showToast('출석 체크 중 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+          showToast('출석 체크 중 오류가 발생했습니다. 다시 시도해 주세요.', 'error');
           if (state.locationMode === 'indoor') {
             validateIndoorForm();
           } else {
@@ -1660,9 +1660,9 @@
           if (newWindow) {
             newWindow.document.write('<img src="' + dataUrl + '" style="max-width:100%">');
             newWindow.document.title = '출석 확인증';
-            showToast('새 창에서 이미지를 저장해주세요.', 'info');
+            showToast('새 창에서 이미지를 저장해 주세요.', 'info');
           } else {
-            showToast('팝업이 차단되었습니다. 팝업을 허용해주세요.', 'error');
+            showToast('팝업이 차단되었습니다. 팝업을 허용해 주세요.', 'error');
           }
         }
       }).catch(() => {
@@ -1891,11 +1891,11 @@
       const department = document.getElementById('checkDept').value.trim();
 
       if (!name || name.length < 2) {
-        showToast('성명을 2자 이상 입력해주세요.', 'warning');
+        showToast('성명을 2자 이상 입력해 주세요.', 'warning');
         return;
       }
       if (!department || department.length < 2) {
-        showToast('소속을 2자 이상 입력해주세요.', 'warning');
+        showToast('소속을 2자 이상 입력해 주세요.', 'warning');
         return;
       }
 
@@ -1968,7 +1968,7 @@
               </div>
               <div>
                 <p class="font-bold text-amber-800 dark:text-amber-400 text-sm">출석 기록을 찾을 수 없습니다</p>
-                <p class="text-xs text-amber-600 dark:text-amber-500 mt-1">이름과 소속이 정확한지 확인해주세요</p>
+                <p class="text-xs text-amber-600 dark:text-amber-500 mt-1">이름과 소속이 정확한지 확인해 주세요</p>
               </div>
             </div>
           </div>
