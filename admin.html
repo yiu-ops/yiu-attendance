@@ -826,9 +826,14 @@
     // ========================================
 
     function generateQRCode() {
-      // 출석 페이지 URL 기반 QR 코드 생성 (회의 종료까지 유지)
+      // 출석 페이지 URL 기반 QR 코드 생성 (회의별 고유 QR)
+      const eventId = state.settings.current_event_id;
+      if (!eventId) {
+        showToast('먼저 회의를 시작해 주세요.', 'warning');
+        return;
+      }
       const attendanceUrl = window.location.href.replace(/\/admin\.html.*$/, '/index.html');
-      const qrUrl = attendanceUrl + '?qr=1';
+      const qrUrl = attendanceUrl + '?qr=1&eid=' + encodeURIComponent(eventId);
 
       const qrArea = document.getElementById('qrCodeArea');
       qrArea.innerHTML = '';
