@@ -758,9 +758,9 @@
         <div class="p-4 bg-gray-50 dark:bg-slate-700/50 rounded-xl border-l-4 border-indigo-500">
           <div class="flex justify-between items-start">
             <div>
-              <div class="font-bold text-gray-900 dark:text-white">${i + 1}. ${a.name || '이름 없음'}</div>
+              <div class="font-bold text-gray-900 dark:text-white">${i + 1}. ${escapeHtml(a.name) || '이름 없음'}</div>
               <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                ${a.department || '소속 없음'} · ${a.email || '(이메일 없음)'}
+                ${escapeHtml(a.department) || '소속 없음'} · ${escapeHtml(a.email) || '(이메일 없음)'}
               </div>
             </div>
             <div class="text-right">
@@ -791,9 +791,9 @@
         <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border-l-4 border-red-500">
           <div class="flex justify-between items-start">
             <div>
-              <div class="font-bold text-red-800 dark:text-red-400">${i + 1}. ${b.name || '이름 없음'}</div>
+              <div class="font-bold text-red-800 dark:text-red-400">${i + 1}. ${escapeHtml(b.name) || '이름 없음'}</div>
               <div class="text-sm text-red-600 dark:text-red-500 mt-1">
-                ${b.department || '소속 없음'} · ${b.reason || ''}
+                ${escapeHtml(b.department) || '소속 없음'} · ${escapeHtml(b.reason) || ''}
               </div>
             </div>
             <div class="text-xs text-gray-400">${b.time || ''}</div>
@@ -1517,6 +1517,11 @@
       if (type === 'success') {
         setTimeout(() => container.innerHTML = '', 3000);
       }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
     function showToast(message, type = 'info') {

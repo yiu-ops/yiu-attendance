@@ -441,8 +441,8 @@ function saveAttendanceImproved(data) {
     var isIndoorMode = settings.location_mode === 'indoor';
     var locationResult;
 
-    if (isIndoorMode && data.locationMode === 'indoor') {
-      // 실내 모드: GPS 검증 생략, QR 인증으로 대체
+    if (isIndoorMode) {
+      // 서버 설정이 실내 모드: GPS 검증 생략, QR 인증으로 대체
       locationResult = { valid: true, distance: 0 };
     } else {
       locationResult = validateLocationForDevice(
