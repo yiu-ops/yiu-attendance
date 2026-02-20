@@ -1280,7 +1280,7 @@ function sendAttendanceEmail(data, sessionId, distance, eventId) {
 
       // 헤더
       + '<tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 40px 32px;text-align:center;">'
-      + '<div style="width:64px;height:64px;margin:0 auto 16px;background:rgba(255,255,255,0.2);border-radius:50%;line-height:64px;font-size:28px;">&#10003;</div>'
+      + '<img src="https://yiu-ops.github.io/yiu-attendance/icons/logo-original.png" alt="용인대학교" width="72" height="72" style="display:block;margin:0 auto 12px;border-radius:50%;background:rgba(255,255,255,0.95);padding:4px;">'
       + '<h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">출석이 확인되었습니다</h1>'
       + '<p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">' + meetingTitle + '</p>'
       + '</td></tr>'
@@ -1342,8 +1342,9 @@ function sendAttendanceEmail(data, sessionId, distance, eventId) {
       // 푸터
       + '<tr><td style="padding:32px 40px;text-align:center;">'
       + '<hr style="border:none;border-top:1px solid #e5e7eb;margin:0 0 24px;">'
-      + '<p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">용인대학교 출석시스템</p>'
-      + '<p style="margin:0;color:#d1d5db;font-size:11px;">&copy; ' + currentYear + ' Yongin University. All rights reserved.</p>'
+      + '<img src="https://yiu-ops.github.io/yiu-attendance/icons/logo-original.png" alt="용인대학교" width="36" height="36" style="display:block;margin:0 auto 12px;opacity:0.5;">'
+      + '<p style="margin:0 0 4px;color:#9ca3af;font-size:12px;font-weight:600;">용인대학교 출석시스템</p>'
+      + '<p style="margin:0;color:#d1d5db;font-size:11px;">&copy; ' + currentYear + ' Yong In University. All rights reserved.</p>'
       + '</td></tr>'
 
       + '</table>'
@@ -1570,8 +1571,9 @@ function testEmailSystem() {
       + '</td></tr>'
       + '<tr><td style="padding:0 40px 32px;text-align:center;">'
       + '<hr style="border:none;border-top:1px solid #e5e7eb;margin:0 0 24px;">'
-      + '<p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">용인대학교 출석시스템</p>'
-      + '<p style="margin:0;color:#d1d5db;font-size:11px;">&copy; ' + currentYear + ' Yongin University. All rights reserved.</p>'
+      + '<img src="https://yiu-ops.github.io/yiu-attendance/icons/logo-original.png" alt="용인대학교" width="36" height="36" style="display:block;margin:0 auto 12px;opacity:0.5;">'
+      + '<p style="margin:0 0 4px;color:#9ca3af;font-size:12px;font-weight:600;">용인대학교 출석시스템</p>'
+      + '<p style="margin:0;color:#d1d5db;font-size:11px;">&copy; ' + currentYear + ' Yong In University. All rights reserved.</p>'
       + '</td></tr>'
       + '</table></td></tr></table></body></html>';
 
