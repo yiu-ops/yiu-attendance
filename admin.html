@@ -765,7 +765,7 @@
             </div>
             <div class="text-right">
               <div class="text-xs text-gray-400">${a.time || ''}</div>
-              <div class="text-xs text-indigo-600 dark:text-indigo-400">${a.distance ? a.distance + 'm' : ''}</div>
+              <div class="text-xs text-indigo-600 dark:text-indigo-400">${a.distance > 0 ? a.distance + 'm' : (a.distance === 0 ? 'QR 인증' : '')}</div>
             </div>
           </div>
         </div>

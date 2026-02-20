@@ -823,7 +823,7 @@ function getAttendanceStats() {
             department: row[1],
             email: row[2] || '(미입력)',
             time: formatDateTime(time),
-            distance: row[6] ? Math.round(parseFloat(row[6])) : 'N/A'
+            distance: (row[6] !== undefined && row[6] !== '' && row[6] !== null) ? Math.round(parseFloat(row[6])) : 'N/A'
           });
 
           // 시간대별 통계
