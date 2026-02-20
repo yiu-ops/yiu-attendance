@@ -894,7 +894,7 @@
       if (newMode === 'indoor' && state.qrEntryFlag && !state.isQrVerified && !state.isCompleted) {
         // QR의 회의 ID가 현재 회의와 일치하는지 검증
         if (!state.qrEventId || state.qrEventId !== settings.current_event_id) {
-          showToast('유효하지 않은 QR 코드입니다. 현재 회의 QR 코드를 스캔해 주세요.', 'error');
+          showInvalidQrScreen();
         } else {
           handleIndoorQrVerified();
         }
@@ -1333,6 +1333,32 @@
       } else {
         showToast('유효하지 않은 QR 코드입니다.', 'error');
       }
+    }
+
+    function showInvalidQrScreen() {
+      // 실내 모드 전체 숨김 (QR 스캐너 + 폼)
+      document.getElementById('indoorSection').classList.add('hidden');
+      document.getElementById('outdoorSection').classList.add('hidden');
+      document.getElementById('modeBadge').classList.add('hidden');
+
+      // 차단 안내 화면 표시
+      const indoorSection = document.getElementById('indoorSection');
+      const invalidQrDiv = document.createElement('div');
+      invalidQrDiv.className = 'text-center py-12';
+      invalidQrDiv.innerHTML = `
+        <div class="mb-6">
+          <div class="w-20 h-20 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
+            <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">유효하지 않은 QR 코드</h3>
+          <p class="text-gray-500 dark:text-gray-400 mb-6">이전 회의의 QR 코드이거나 만료된 QR 코드입니다.<br>관리자에게 현재 회의 QR 코드를 요청해 주세요.</p>
+        </div>
+      `;
+      indoorSection.parentNode.insertBefore(invalidQrDiv, indoorSection.nextSibling);
+
+      updateStatus('유효하지 않은 QR 코드입니다.', 'error');
     }
 
     function handleIndoorQrVerified() {
