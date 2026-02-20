@@ -1,6 +1,6 @@
 // ==============================================
 // 용인대학교 교직원 회의 출석 시스템 - Code.gs
-// 버전: 2.0.0 (QR + GPS 이중 인증, 레이트 리미팅 추가)
+// 버전: 2.1.0 (실내 모드 GPS 생략, XSS 방어, 중복 출석 방지 강화)
 // ==============================================
 
 // 관리자 설정 (배포 전 수정 필요)
@@ -1433,7 +1433,7 @@ function getSystemStatus() {
       spreadsheetUrl: spreadsheet.getUrl(),
       currentEventId: settings.current_event_id || 'N/A',
       timestamp: new Date().toISOString(),
-      version: '2.0.0'
+      version: '2.1.0'
     };
 
   } catch (error) {
