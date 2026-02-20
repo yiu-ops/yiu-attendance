@@ -4,16 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="theme-color" content="#6366f1">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="용인대학교 교직원 출석 시스템 - QR코드와 GPS를 통한 간편한 출석 체크">
 
   <title>출석 체크</title>
 
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -741,7 +735,6 @@
       initializeSystem();
       initializeDarkMode();
       setupEventListeners();
-      registerServiceWorker();
     });
 
     function initializeSystem() {
@@ -816,13 +809,6 @@
       localStorage.setItem('darkMode', isDark);
     }
 
-    function registerServiceWorker() {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-          .then(reg => console.log('Service Worker 등록 성공'))
-          .catch(err => console.log('Service Worker 등록 실패:', err));
-      }
-    }
 
     // ========================================
     // 이벤트 리스너

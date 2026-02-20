@@ -4,10 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#6366f1">
-  <link rel="manifest" href="manifest.json">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <title>용인대학교 출석 관리</title>
 
   <!-- Tailwind CSS -->
@@ -1537,12 +1533,6 @@
 
     console.log('용인대학교 출석 관리 시스템 로드 완료');
 
-    // Service Worker 등록
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('[SW] 등록 완료:', reg.scope))
-        .catch(err => console.error('[SW] 등록 실패:', err));
-    }
   </script>
 </body>
 </html>
