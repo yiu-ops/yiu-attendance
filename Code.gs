@@ -1260,14 +1260,17 @@ function sendAttendanceEmail(data, sessionId, distance, eventId) {
     var settings = getSettings();
     var subject = '[용인대학교] ' + settings.meeting_title + ' 출석 확인';
 
+    var meetingTitle = settings.meeting_title || '교직원 회의';
+    var currentYear = new Date().getFullYear();
+
     var emailBody = '';
-    emailBody += '용인대학교 교직원 회의 출석이 확인되었습니다.\n\n';
+    emailBody += meetingTitle + ' 출석이 확인되었습니다.\n\n';
     emailBody += '성명: ' + data.name + '\n';
     emailBody += '소속: ' + data.department + '\n';
     emailBody += '출석 시간: ' + new Date().toLocaleString() + '\n';
     emailBody += '회의실 거리: ' + distance + 'm\n';
     emailBody += '세션 ID: ' + sessionId + '\n\n';
-    emailBody += '© 2025 용인대학교 출석시스템';
+    emailBody += '© ' + currentYear + ' 용인대학교 출석시스템';
 
     GmailApp.sendEmail(
       data.email.trim(),
