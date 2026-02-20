@@ -1608,9 +1608,10 @@
 
       document.getElementById('completionMessage').classList.remove('hidden');
 
-      // 폼 숨기기
+      // 폼 및 모드 배지 숨기기
       document.getElementById('outdoorSection').classList.add('hidden');
       document.getElementById('indoorSection').classList.add('hidden');
+      document.getElementById('modeBadge').classList.add('hidden');
 
       updateSubmitButton(false);
       updateStatus('출석이 완료되었습니다!', 'ready');
@@ -1727,6 +1728,7 @@
       document.getElementById('completionMessage').classList.remove('hidden');
       document.getElementById('outdoorSection').classList.add('hidden');
       document.getElementById('indoorSection').classList.add('hidden');
+      document.getElementById('modeBadge').classList.add('hidden');
       updateSubmitButton(false);
       updateStatus('이미 출석이 완료되었습니다', 'ready');
     }
