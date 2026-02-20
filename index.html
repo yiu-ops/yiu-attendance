@@ -610,8 +610,12 @@
             </div>
           </div>
         </div>
+        <!-- 안내 문구 -->
+        <div class="text-center mt-4 px-4">
+          <p class="text-sm text-gray-500 dark:text-gray-400">출석이 정상적으로 처리되었습니다. 이 기기에서는 추가 출석이 제한됩니다.</p>
+        </div>
         <!-- 확인증 저장 버튼 -->
-        <div class="text-center mt-4">
+        <div class="text-center mt-3">
           <button
             onclick="captureAttendanceCertificate()"
             class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
@@ -1671,8 +1675,9 @@
     // ========================================
 
     function checkAlreadyAttended() {
-      if (!state.preventProxy || !state.currentEventId) return;
+      if (!state.currentEventId) return;
 
+      // 이미 출석한 기기라면 항상 완료 화면 표시 (대리 출석 방지)
       if (hasAlreadyAttended(state.currentEventId)) {
         state.isCompleted = true;
         showAlreadyAttendedMessage();
