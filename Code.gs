@@ -1258,25 +1258,106 @@ function sendAttendanceEmail(data, sessionId, distance, eventId) {
     }
 
     var settings = getSettings();
-    var subject = '[용인대학교] ' + settings.meeting_title + ' 출석 확인';
-
     var meetingTitle = settings.meeting_title || '교직원 회의';
-    var currentYear = new Date().getFullYear();
+    var subject = '[용인대학교] ' + meetingTitle + ' 출석 확인';
+    var now = new Date();
+    var currentYear = now.getFullYear();
+    var formattedTime = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyy년 MM월 dd일 (E) HH:mm:ss');
 
-    var emailBody = '';
-    emailBody += meetingTitle + ' 출석이 확인되었습니다.\n\n';
-    emailBody += '성명: ' + data.name + '\n';
-    emailBody += '소속: ' + data.department + '\n';
-    emailBody += '출석 시간: ' + new Date().toLocaleString() + '\n';
-    emailBody += '회의실 거리: ' + distance + 'm\n';
-    emailBody += '세션 ID: ' + sessionId + '\n\n';
-    emailBody += '© ' + currentYear + ' 용인대학교 출석시스템';
+    var plainBody = meetingTitle + ' 출석이 확인되었습니다.\n\n'
+      + '성명: ' + data.name + '\n'
+      + '소속: ' + data.department + '\n'
+      + '출석 시간: ' + formattedTime + '\n'
+      + '확인 번호: ' + sessionId + '\n\n'
+      + '© ' + currentYear + ' 용인대학교 출석시스템';
+
+    var htmlBody = '<!DOCTYPE html>'
+      + '<html><head><meta charset="utf-8"></head>'
+      + '<body style="margin:0;padding:0;background-color:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,\'Helvetica Neue\',Arial,sans-serif;">'
+      + '<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f2f5;padding:40px 20px;">'
+      + '<tr><td align="center">'
+      + '<table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">'
+
+      // 헤더
+      + '<tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 40px 32px;text-align:center;">'
+      + '<div style="width:64px;height:64px;margin:0 auto 16px;background:rgba(255,255,255,0.2);border-radius:50%;line-height:64px;font-size:28px;">&#10003;</div>'
+      + '<h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">출석이 확인되었습니다</h1>'
+      + '<p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">' + meetingTitle + '</p>'
+      + '</td></tr>'
+
+      // 확인 번호
+      + '<tr><td style="padding:32px 40px 0;text-align:center;">'
+      + '<p style="margin:0 0 8px;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:1px;">확인 번호</p>'
+      + '<p style="margin:0;color:#1f2937;font-size:20px;font-weight:700;font-family:\'Courier New\',monospace;background:#f3f4f6;display:inline-block;padding:8px 24px;border-radius:8px;">' + sessionId + '</p>'
+      + '</td></tr>'
+
+      // 구분선
+      + '<tr><td style="padding:24px 40px 0;">'
+      + '<hr style="border:none;border-top:1px solid #e5e7eb;margin:0;">'
+      + '</td></tr>'
+
+      // 출석 정보 테이블
+      + '<tr><td style="padding:24px 40px 0;">'
+      + '<p style="margin:0 0 16px;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:1px;">출석 정보</p>'
+      + '<table width="100%" cellpadding="0" cellspacing="0">'
+
+      + '<tr>'
+      + '<td style="padding:12px 16px;background:#f9fafb;border-radius:8px 8px 0 0;border-bottom:1px solid #f0f2f5;">'
+      + '<span style="color:#6b7280;font-size:13px;">성명</span></td>'
+      + '<td style="padding:12px 16px;background:#f9fafb;border-radius:8px 8px 0 0;border-bottom:1px solid #f0f2f5;text-align:right;">'
+      + '<span style="color:#1f2937;font-size:14px;font-weight:600;">' + data.name + '</span></td>'
+      + '</tr>'
+
+      + '<tr>'
+      + '<td style="padding:12px 16px;background:#f9fafb;border-bottom:1px solid #f0f2f5;">'
+      + '<span style="color:#6b7280;font-size:13px;">소속</span></td>'
+      + '<td style="padding:12px 16px;background:#f9fafb;border-bottom:1px solid #f0f2f5;text-align:right;">'
+      + '<span style="color:#1f2937;font-size:14px;font-weight:600;">' + data.department + '</span></td>'
+      + '</tr>'
+
+      + '<tr>'
+      + '<td style="padding:12px 16px;background:#f9fafb;border-bottom:1px solid #f0f2f5;">'
+      + '<span style="color:#6b7280;font-size:13px;">출석 시간</span></td>'
+      + '<td style="padding:12px 16px;background:#f9fafb;border-bottom:1px solid #f0f2f5;text-align:right;">'
+      + '<span style="color:#1f2937;font-size:14px;font-weight:600;">' + formattedTime + '</span></td>'
+      + '</tr>'
+
+      + '<tr>'
+      + '<td style="padding:12px 16px;background:#f9fafb;border-radius:0 0 8px 8px;">'
+      + '<span style="color:#6b7280;font-size:13px;">인증 방식</span></td>'
+      + '<td style="padding:12px 16px;background:#f9fafb;border-radius:0 0 8px 8px;text-align:right;">'
+      + '<span style="color:#1f2937;font-size:14px;font-weight:600;">' + (distance > 0 ? 'GPS (' + distance + 'm)' : 'QR 코드') + '</span></td>'
+      + '</tr>'
+
+      + '</table>'
+      + '</td></tr>'
+
+      // 안내 문구
+      + '<tr><td style="padding:24px 40px 0;text-align:center;">'
+      + '<p style="margin:0;padding:16px;background:#eff6ff;border-radius:8px;color:#1e40af;font-size:13px;">'
+      + '본 이메일은 출석 확인 증빙 자료로 활용할 수 있습니다.<br>문의사항이 있으시면 관리자에게 연락해 주세요.'
+      + '</p>'
+      + '</td></tr>'
+
+      // 푸터
+      + '<tr><td style="padding:32px 40px;text-align:center;">'
+      + '<hr style="border:none;border-top:1px solid #e5e7eb;margin:0 0 24px;">'
+      + '<p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">용인대학교 출석시스템</p>'
+      + '<p style="margin:0;color:#d1d5db;font-size:11px;">&copy; ' + currentYear + ' Yongin University. All rights reserved.</p>'
+      + '</td></tr>'
+
+      + '</table>'
+      + '</td></tr></table>'
+      + '</body></html>';
 
     GmailApp.sendEmail(
       data.email.trim(),
       subject,
-      emailBody,
-      { name: '용인대학교 출석시스템' }
+      plainBody,
+      {
+        name: '용인대학교 출석시스템',
+        htmlBody: htmlBody
+      }
     );
 
     // 이메일 발송 로그 기록
@@ -1462,9 +1543,39 @@ function testEmailSystem() {
     }
 
     var subject = '[테스트] 용인대학교 출석 시스템';
-    var body = '테스트 이메일입니다.\n\n시간: ' + new Date().toLocaleString() + '\n상태: 정상 작동\n버전: 2.0.0\n\n--\n용인대학교 출석 시스템';
+    var now = new Date();
+    var currentYear = now.getFullYear();
+    var formattedTime = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyy년 MM월 dd일 (E) HH:mm:ss');
+    var plainBody = '테스트 이메일입니다.\n시간: ' + formattedTime + '\n상태: 정상 작동\n버전: 2.1.0\n\n--\n용인대학교 출석 시스템';
 
-    GmailApp.sendEmail(settings.notification_email, subject, body);
+    var htmlBody = '<!DOCTYPE html>'
+      + '<html><head><meta charset="utf-8"></head>'
+      + '<body style="margin:0;padding:0;background-color:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,\'Helvetica Neue\',Arial,sans-serif;">'
+      + '<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f2f5;padding:40px 20px;">'
+      + '<tr><td align="center">'
+      + '<table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">'
+      + '<tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 40px 32px;text-align:center;">'
+      + '<h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">시스템 테스트</h1>'
+      + '<p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">이메일 발송 테스트</p>'
+      + '</td></tr>'
+      + '<tr><td style="padding:32px 40px;">'
+      + '<table width="100%" cellpadding="0" cellspacing="0">'
+      + '<tr><td style="padding:12px 16px;background:#f9fafb;border-radius:8px 8px 0 0;border-bottom:1px solid #f0f2f5;"><span style="color:#6b7280;font-size:13px;">상태</span></td>'
+      + '<td style="padding:12px 16px;background:#f9fafb;border-radius:8px 8px 0 0;border-bottom:1px solid #f0f2f5;text-align:right;"><span style="color:#10b981;font-size:14px;font-weight:600;">정상 작동</span></td></tr>'
+      + '<tr><td style="padding:12px 16px;background:#f9fafb;border-bottom:1px solid #f0f2f5;"><span style="color:#6b7280;font-size:13px;">시간</span></td>'
+      + '<td style="padding:12px 16px;background:#f9fafb;border-bottom:1px solid #f0f2f5;text-align:right;"><span style="color:#1f2937;font-size:14px;font-weight:600;">' + formattedTime + '</span></td></tr>'
+      + '<tr><td style="padding:12px 16px;background:#f9fafb;border-radius:0 0 8px 8px;"><span style="color:#6b7280;font-size:13px;">버전</span></td>'
+      + '<td style="padding:12px 16px;background:#f9fafb;border-radius:0 0 8px 8px;text-align:right;"><span style="color:#1f2937;font-size:14px;font-weight:600;">2.1.0</span></td></tr>'
+      + '</table>'
+      + '</td></tr>'
+      + '<tr><td style="padding:0 40px 32px;text-align:center;">'
+      + '<hr style="border:none;border-top:1px solid #e5e7eb;margin:0 0 24px;">'
+      + '<p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">용인대학교 출석시스템</p>'
+      + '<p style="margin:0;color:#d1d5db;font-size:11px;">&copy; ' + currentYear + ' Yongin University. All rights reserved.</p>'
+      + '</td></tr>'
+      + '</table></td></tr></table></body></html>';
+
+    GmailApp.sendEmail(settings.notification_email, subject, plainBody, { htmlBody: htmlBody });
 
     return {
       success: true,
