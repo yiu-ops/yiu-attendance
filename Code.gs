@@ -436,19 +436,28 @@ function saveAttendanceImproved(data) {
       }
     }
 
-    // 위치 검증
-    var locationResult = validateLocationForDevice(
-      data.latitude,
-      data.longitude,
-      data.accuracy,
-      deviceAnalysis
-    );
+    // 위치 검증 (실내 모드에서는 건너뜀)
+    var settings = getSettings();
+    var isIndoorMode = settings.location_mode === 'indoor';
+    var locationResult;
 
-    if (!locationResult.valid) {
-      return {
-        success: false,
-        error: locationResult.error || '위치 검증에 실패했습니다.'
-      };
+    if (isIndoorMode && data.locationMode === 'indoor') {
+      // 실내 모드: GPS 검증 생략, QR 인증으로 대체
+      locationResult = { valid: true, distance: 0 };
+    } else {
+      locationResult = validateLocationForDevice(
+        data.latitude,
+        data.longitude,
+        data.accuracy,
+        deviceAnalysis
+      );
+
+      if (!locationResult.valid) {
+        return {
+          success: false,
+          error: locationResult.error || '위치 검증에 실패했습니다.'
+        };
+      }
     }
 
     // 스프레드시트 및 시트 준비
