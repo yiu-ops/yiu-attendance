@@ -893,8 +893,8 @@
       // QR로 진입한 사용자: 실내 모드일 때 자동 인증
       if (newMode === 'indoor' && state.qrEntryFlag && !state.isQrVerified && !state.isCompleted) {
         // QR의 회의 ID가 현재 회의와 일치하는지 검증
-        if (state.qrEventId && state.qrEventId !== settings.current_event_id) {
-          showToast('이전 회의의 QR 코드입니다. 현재 회의 QR 코드를 스캔해 주세요.', 'error');
+        if (!state.qrEventId || state.qrEventId !== settings.current_event_id) {
+          showToast('유효하지 않은 QR 코드입니다. 현재 회의 QR 코드를 스캔해 주세요.', 'error');
         } else {
           handleIndoorQrVerified();
         }
