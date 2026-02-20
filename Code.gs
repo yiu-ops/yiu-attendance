@@ -1263,12 +1263,13 @@ function sendAttendanceEmail(data, sessionId, distance, eventId) {
     var now = new Date();
     var currentYear = now.getFullYear();
     var formattedTime = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyy년 MM월 dd일 (E) HH:mm:ss');
+    var confirmNumber = generateConfirmationNumber(now);
 
     var plainBody = meetingTitle + ' 출석이 확인되었습니다.\n\n'
       + '성명: ' + data.name + '\n'
       + '소속: ' + data.department + '\n'
       + '출석 시간: ' + formattedTime + '\n'
-      + '확인 번호: ' + sessionId + '\n\n'
+      + '확인 번호: ' + confirmNumber + '\n\n'
       + '© ' + currentYear + ' 용인대학교 출석시스템';
 
     var htmlBody = '<!DOCTYPE html>'
@@ -1288,7 +1289,7 @@ function sendAttendanceEmail(data, sessionId, distance, eventId) {
       // 확인 번호
       + '<tr><td style="padding:32px 40px 0;text-align:center;">'
       + '<p style="margin:0 0 8px;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:1px;">확인 번호</p>'
-      + '<p style="margin:0;color:#1f2937;font-size:20px;font-weight:700;font-family:\'Courier New\',monospace;background:#f3f4f6;display:inline-block;padding:8px 24px;border-radius:8px;">' + sessionId + '</p>'
+      + '<p style="margin:0;color:#1f2937;font-size:20px;font-weight:700;font-family:\'Courier New\',monospace;background:#f3f4f6;display:inline-block;padding:8px 24px;border-radius:8px;">' + confirmNumber + '</p>'
       + '</td></tr>'
 
       // 구분선
@@ -1440,6 +1441,17 @@ function getOrCreateSheet(spreadsheet, sheetName, headers) {
   } catch (error) {
     throw error;
   }
+}
+
+/**
+ * 간결한 확인 번호 생성 (YYMMDD-NNNN)
+ */
+function generateConfirmationNumber(date) {
+  var yy = String(date.getFullYear()).slice(-2);
+  var mm = String(date.getMonth() + 1).padStart(2, '0');
+  var dd = String(date.getDate()).padStart(2, '0');
+  var rand = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+  return yy + mm + dd + '-' + rand;
 }
 
 /**
