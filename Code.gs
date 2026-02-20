@@ -1270,7 +1270,7 @@ function sendAttendanceEmail(data, sessionId, distance, eventId) {
       + '소속: ' + data.department + '\n'
       + '출석 시간: ' + formattedTime + '\n'
       + '확인 번호: ' + confirmNumber + '\n\n'
-      + '© ' + currentYear + ' 용인대학교 출석시스템';
+      + '© ' + currentYear + ' 용인대학교 교직원 출석 시스템';
 
     var htmlBody = '<!DOCTYPE html>'
       + '<html><head><meta charset="utf-8"></head>'
@@ -1344,7 +1344,7 @@ function sendAttendanceEmail(data, sessionId, distance, eventId) {
       + '<tr><td style="padding:32px 40px;text-align:center;">'
       + '<hr style="border:none;border-top:1px solid #e5e7eb;margin:0 0 24px;">'
       + '<img src="https://yiu-ops.github.io/yiu-attendance/icons/logo-original.png" alt="용인대학교" width="36" height="36" style="display:block;margin:0 auto 12px;opacity:0.5;">'
-      + '<p style="margin:0 0 4px;color:#9ca3af;font-size:12px;font-weight:600;">용인대학교 출석시스템</p>'
+      + '<p style="margin:0 0 4px;color:#9ca3af;font-size:12px;font-weight:600;">용인대학교 교직원 출석 시스템</p>'
       + '<p style="margin:0;color:#d1d5db;font-size:11px;">&copy; ' + currentYear + ' Yong In University. All rights reserved.</p>'
       + '</td></tr>'
 
@@ -1357,7 +1357,7 @@ function sendAttendanceEmail(data, sessionId, distance, eventId) {
       subject,
       plainBody,
       {
-        name: '용인대학교 출석시스템',
+        name: '용인대학교 교직원 출석 시스템',
         htmlBody: htmlBody
       }
     );
@@ -1555,11 +1555,11 @@ function testEmailSystem() {
       };
     }
 
-    var subject = '[테스트] 용인대학교 출석 시스템';
+    var subject = '[테스트] 용인대학교 교직원 출석 시스템';
     var now = new Date();
     var currentYear = now.getFullYear();
     var formattedTime = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyy년 MM월 dd일 (E) HH:mm:ss');
-    var plainBody = '테스트 이메일입니다.\n시간: ' + formattedTime + '\n상태: 정상 작동\n버전: 2.1.0\n\n--\n용인대학교 출석 시스템';
+    var plainBody = '테스트 이메일입니다.\n시간: ' + formattedTime + '\n상태: 정상 작동\n버전: 2.1.0\n\n--\n용인대학교 교직원 출석 시스템';
 
     var htmlBody = '<!DOCTYPE html>'
       + '<html><head><meta charset="utf-8"></head>'
@@ -1584,7 +1584,7 @@ function testEmailSystem() {
       + '<tr><td style="padding:0 40px 32px;text-align:center;">'
       + '<hr style="border:none;border-top:1px solid #e5e7eb;margin:0 0 24px;">'
       + '<img src="https://yiu-ops.github.io/yiu-attendance/icons/logo-original.png" alt="용인대학교" width="36" height="36" style="display:block;margin:0 auto 12px;opacity:0.5;">'
-      + '<p style="margin:0 0 4px;color:#9ca3af;font-size:12px;font-weight:600;">용인대학교 출석시스템</p>'
+      + '<p style="margin:0 0 4px;color:#9ca3af;font-size:12px;font-weight:600;">용인대학교 교직원 출석 시스템</p>'
       + '<p style="margin:0;color:#d1d5db;font-size:11px;">&copy; ' + currentYear + ' Yong In University. All rights reserved.</p>'
       + '</td></tr>'
       + '</table></td></tr></table></body></html>';
