@@ -1029,6 +1029,11 @@
         showToast('새 회의가 시작되었습니다!', 'success');
         document.getElementById('currentEventId').textContent = result.eventId || '생성됨';
 
+        // state에 새 이벤트 ID 반영
+        if (result.eventId) {
+          state.settings.current_event_id = result.eventId;
+        }
+
         // 새 회의 제목이 있으면 settings에도 반영
         const newTitle = document.getElementById('newMeetingTitle').value.trim();
         if (newTitle) {
@@ -1037,9 +1042,20 @@
         }
 
         document.getElementById('newMeetingTitle').value = '';
+
+        // 즉시 통계/목록 초기화 (과거 데이터 제거)
+        updateStatsDisplay({ totalAttendees: 0, currentEventAttendees: 0, deviceBlocked: 0, emailsSent: 0 });
+        state.attendanceData = [];
+        state.blockedData = [];
+        updateRecentAttendees([]);
+        updateBlockedDevices([]);
+
         updateCurrentStatus();
         generateQRCode();
-        setTimeout(refreshAll, 1000);
+
+        // 서버에서 최신 설정과 통계 다시 로드
+        loadCurrentSettings();
+        setTimeout(refreshAll, 1500);
       } else {
         showToast(result?.error || '새 회의 시작에 실패했습니다.', 'error');
       }
