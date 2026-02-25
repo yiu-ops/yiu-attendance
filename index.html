@@ -290,6 +290,165 @@
     .attendance-check-result {
       transition: all 0.3s ease;
     }
+
+    /* ===== 단계별 화면 UI ===== */
+    .step-screen {
+      display: none;
+    }
+    .step-screen.active {
+      display: block;
+      animation: stepIn 0.35s ease-out;
+    }
+    @keyframes stepIn {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 큰 버튼 */
+    .btn-primary {
+      width: 100%;
+      padding: 1.1rem 1.5rem;
+      border-radius: 1rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: white;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      box-shadow: 0 4px 20px rgba(99,102,241,0.35);
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(99,102,241,0.45); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled {
+      background: linear-gradient(135deg, #9ca3af, #d1d5db);
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      border-radius: 1rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #4f46e5;
+      background: #eef2ff;
+      border: 2px solid #818cf8;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .dark .btn-secondary { background: rgba(99,102,241,0.15); color: #a5b4fc; border-color: #6366f1; }
+    .btn-secondary:hover { background: #e0e7ff; }
+    .dark .btn-secondary:hover { background: rgba(99,102,241,0.25); }
+
+    /* 큰 입력 필드 */
+    .input-lg {
+      width: 100%;
+      padding: 1rem 1.2rem;
+      border-radius: 0.875rem;
+      font-size: 1.25rem;
+      border: 2.5px solid #e5e7eb;
+      background: white;
+      color: #111827;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
+    }
+    .dark .input-lg { background: #1e293b; border-color: #475569; color: white; }
+    .input-lg:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
+    .input-lg::placeholder { color: #9ca3af; }
+    .input-lg.error { border-color: #ef4444; }
+
+    /* 큰 라벨 */
+    .label-lg {
+      display: block;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 0.6rem;
+    }
+    .dark .label-lg { color: #d1d5db; }
+
+    /* 단계 제목 */
+    .step-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #1e1b4b;
+      text-align: center;
+      margin-bottom: 0.4rem;
+    }
+    .dark .step-title { color: #e0e7ff; }
+    .step-desc {
+      font-size: 1rem;
+      color: #6b7280;
+      text-align: center;
+      margin-bottom: 1.8rem;
+    }
+    .dark .step-desc { color: #94a3b8; }
+
+    /* 아이콘 원형 배경 */
+    .step-icon {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.2rem;
+    }
+
+    /* QR 스캐너 */
+    #qr-reader { width: 100%; max-width: 400px; margin: 0 auto; }
+    #qr-reader video { border-radius: 12px; }
+
+    /* 확인증 카드 */
+    .certificate-card {
+      max-width: 400px; margin: 0 auto;
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      background: white;
+    }
+    .certificate-header {
+      background: linear-gradient(135deg, #10b981, #059669);
+      padding: 24px 20px; text-align: center; color: white;
+    }
+    .certificate-body { padding: 20px; }
+    .certificate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .certificate-grid-item { padding: 10px; background: #f9fafb; border-radius: 8px; }
+    .certificate-grid-item .label { font-size: 11px; color: #6b7280; margin-bottom: 2px; }
+    .certificate-grid-item .value { font-size: 14px; font-weight: 600; color: #111827; }
+    .certificate-meeting { margin-top: 12px; padding: 10px; background: #eef2ff; border-radius: 8px; text-align: center; }
+    .certificate-meeting .label { font-size: 11px; color: #6366f1; margin-bottom: 2px; }
+    .certificate-meeting .value { font-size: 14px; font-weight: 600; color: #4338ca; }
+    .certificate-footer { margin-top: 16px; padding-top: 12px; border-top: 1px dashed #e5e7eb; text-align: center; font-size: 11px; color: #9ca3af; }
+    .certificate-confirm-number {
+      margin: 12px 0 16px; padding: 8px 16px;
+      background: rgba(255,255,255,0.2); border-radius: 8px;
+      font-family: monospace; font-size: 18px; font-weight: 700; letter-spacing: 2px;
+    }
+
+    /* 상태 표시 */
+    .status-bar {
+      padding: 0.9rem 1rem;
+      border-radius: 0.875rem;
+      border: 2px solid transparent;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+    }
+    .status-checking { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+    .dark .status-checking { background: rgba(251,191,36,0.15); color: #fcd34d; border-color: #f59e0b; }
+    .status-ready { background: #d1fae5; border-color: #34d399; color: #065f46; }
+    .dark .status-ready { background: rgba(52,211,153,0.15); color: #34d399; border-color: #10b981; }
+    .status-error { background: #fee2e2; border-color: #f87171; color: #991b1b; }
+    .dark .status-error { background: rgba(248,113,113,0.15); color: #f87171; border-color: #ef4444; }
+
+    /* 위치 지도 */
+    #locationMap {
+      height: 250px; width: 100%; border-radius: 12px; z-index: 0;
+    }
+    .location-map-card { transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease; overflow: hidden; }
+    .location-map-card.collapsed { max-height: 0; opacity: 0; margin: 0; }
+    .location-map-card.expanded { max-height: 600px; opacity: 1; }
   </style>
 </head>
 <body class="gradient-bg min-h-screen font-sans antialiased text-gray-900 dark:text-white transition-colors duration-300">
@@ -310,263 +469,164 @@
 
   <div class="container mx-auto px-4 py-6 max-w-lg min-h-screen flex flex-col">
 
-    <!-- 헤더 카드 -->
-    <div class="glass-card rounded-3xl shadow-2xl p-6 mb-6 animate-fade-in">
-      <div class="text-center">
-        <!-- 로고 -->
-        <img src="icons/logo-original.png" alt="용인대학교" class="w-20 h-20 mx-auto mb-4 object-contain">
-
-        <h2 id="meetingTitle" class="text-lg font-medium text-indigo-600 dark:text-indigo-400 mb-2">출석 체크</h2>
-        <p id="meetingDescription" class="text-sm text-gray-500 dark:text-gray-400">설정을 불러오는 중...</p>
-      </div>
+    <!-- 헤더: 항상 표시 -->
+    <div class="glass-card rounded-3xl shadow-2xl p-5 mb-5 animate-fade-in text-center">
+      <img src="icons/logo-original.png" alt="용인대학교" class="w-16 h-16 mx-auto mb-3 object-contain">
+      <h1 id="meetingTitle" class="text-xl font-bold text-indigo-600 dark:text-indigo-400">출석 체크</h1>
     </div>
 
-    <!-- 메인 컨텐츠 -->
-    <div class="glass-card rounded-3xl shadow-2xl p-6 flex-1 animate-slide-up">
+    <!-- 메인 카드 -->
+    <div id="mainCard" class="glass-card rounded-3xl shadow-2xl p-6 flex-1 animate-slide-up">
 
-      <!-- 알림 컨테이너 -->
-      <div id="alertContainer" class="mb-4"></div>
+      <!-- 알림 -->
+      <div id="alertContainer" class="mb-2"></div>
 
-      <!-- 상태 표시 -->
-      <div id="statusIndicator" class="mb-6 p-4 rounded-2xl bg-gray-100 dark:bg-slate-700 border-2 border-gray-200 dark:border-slate-600 transition-all duration-300">
-        <div class="flex items-center justify-center gap-3">
-          <div class="spinner w-5 h-5"></div>
-          <span class="font-medium text-gray-600 dark:text-gray-300">시스템을 준비하고 있습니다...</span>
+      <!-- ──────────────────────────────────────── -->
+      <!-- STEP 0: 시작 대기 (설정 로딩 중)         -->
+      <!-- ──────────────────────────────────────── -->
+      <div id="screen-loading" class="step-screen active text-center py-10">
+        <div class="spinner w-12 h-12 mx-auto mb-4" style="border-width:4px;width:3rem;height:3rem;"></div>
+        <p class="text-lg font-semibold text-gray-500 dark:text-gray-400">시스템을 준비하고 있습니다...</p>
+      </div>
+
+      <!-- ──────────────────────────────────────── -->
+      <!-- STEP 1: 시작 화면                        -->
+      <!-- ──────────────────────────────────────── -->
+      <div id="screen-start" class="step-screen">
+        <div class="step-icon bg-indigo-100 dark:bg-indigo-900/40">
+          <svg class="w-10 h-10 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          </svg>
+        </div>
+        <p class="step-title" id="startTitle">교직원 회의<br>출석 체크</p>
+        <p class="step-desc" id="startDesc">아래 버튼을 눌러 출석을 시작하세요</p>
+        <button class="btn-primary" onclick="goToNameStep()">출석 체크 시작</button>
+      </div>
+
+      <!-- ──────────────────────────────────────── -->
+      <!-- STEP 2: 성명 입력                        -->
+      <!-- ──────────────────────────────────────── -->
+      <div id="screen-name" class="step-screen">
+        <p class="step-title">성명 입력</p>
+        <p class="step-desc">본인의 성명을 정확히 입력해 주세요</p>
+        <label class="label-lg" for="inputName">성명 <span class="text-red-500">*</span></label>
+        <input id="inputName" type="text" class="input-lg" placeholder="홍길동" maxlength="20"
+               autocomplete="name" autofocus
+               oninput="validateStepInput('inputName','nameError','btn-name-next', 2)"
+               onkeydown="if(event.key==='Enter'){document.getElementById('btn-name-next').click()}">
+        <p id="nameError" class="text-red-500 text-sm mt-2 hidden"></p>
+        <div class="mt-6 space-y-3">
+          <button id="btn-name-next" class="btn-primary" onclick="goToDeptStep()" disabled>다음</button>
+          <button class="btn-secondary" onclick="goToScreen('screen-start')">이전</button>
         </div>
       </div>
 
-      <!-- 위치 지도 (거리 초과 시 표시) -->
-      <div id="locationMapCard" class="location-map-card collapsed mb-4">
-        <div class="p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2">
-              <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
-              <span class="font-semibold text-red-700 dark:text-red-400 text-sm">위치 비교</span>
+      <!-- ──────────────────────────────────────── -->
+      <!-- STEP 3: 소속 입력                        -->
+      <!-- ──────────────────────────────────────── -->
+      <div id="screen-dept" class="step-screen">
+        <p class="step-title">소속 입력</p>
+        <p class="step-desc">소속 학과 또는 부서를 입력해 주세요</p>
+        <label class="label-lg" for="inputDept">소속 <span class="text-red-500">*</span></label>
+        <input id="inputDept" type="text" class="input-lg" placeholder="경영학과, 교무팀 등" maxlength="50"
+               autocomplete="organization-title" autofocus
+               oninput="validateStepInput('inputDept','deptError','btn-dept-next', 2)"
+               onkeydown="if(event.key==='Enter'){document.getElementById('btn-dept-next').click()}">
+        <p id="deptError" class="text-red-500 text-sm mt-2 hidden"></p>
+        <div class="mt-6 space-y-3">
+          <button id="btn-dept-next" class="btn-primary" onclick="goToEmailOrVerifyStep()" disabled>다음</button>
+          <button class="btn-secondary" onclick="goToScreen('screen-name')">이전</button>
+        </div>
+      </div>
+
+      <!-- ──────────────────────────────────────── -->
+      <!-- STEP 3b: 이메일 입력 (email_enabled 시만)-->
+      <!-- ──────────────────────────────────────── -->
+      <div id="screen-email" class="step-screen">
+        <p class="step-title">이메일 입력</p>
+        <p class="step-desc">출석 확인증을 받으실 이메일을 입력해 주세요<br><span class="text-indigo-500 font-semibold">입력하지 않아도 됩니다</span></p>
+        <label class="label-lg" for="inputEmail">이메일 <span class="text-gray-400 font-normal text-base">(선택)</span></label>
+        <input id="inputEmail" type="email" class="input-lg" placeholder="example@yiu.ac.kr" maxlength="100"
+               autocomplete="email" autofocus
+               oninput="validateEmailInput()"
+               onkeydown="if(event.key==='Enter'){document.getElementById('btn-email-next').click()}">
+        <p id="emailError" class="text-red-500 text-sm mt-2 hidden"></p>
+        <div class="mt-6 space-y-3">
+          <button id="btn-email-next" class="btn-primary" onclick="goToVerifyStep()">다음</button>
+          <button class="btn-secondary" onclick="goToScreen('screen-dept')">이전</button>
+        </div>
+      </div>
+
+      <!-- ──────────────────────────────────────── -->
+      <!-- STEP 4a: GPS 위치 확인 (실외 모드)       -->
+      <!-- ──────────────────────────────────────── -->
+      <div id="screen-gps" class="step-screen">
+        <div class="step-icon bg-green-100 dark:bg-green-900/40">
+          <svg class="w-10 h-10 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <p class="step-title">위치 확인</p>
+        <p class="step-desc">현재 위치가 회의실 범위 내인지 확인합니다</p>
+        <div id="gpsStatusBar" class="status-bar status-checking">📡 위치를 확인하고 있습니다...</div>
+
+        <!-- 위치 오류 시 지도 -->
+        <div id="locationMapCard" class="location-map-card collapsed mb-4">
+          <div class="p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800">
+            <div class="flex items-center justify-between mb-3">
+              <span class="font-semibold text-red-700 dark:text-red-400 text-sm">📍 위치 비교</span>
+              <button onclick="toggleLocationMap()" class="text-red-400 hover:text-red-600 transition-colors">✕</button>
             </div>
-            <button onclick="toggleLocationMap()" class="text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
-          </div>
-          <div id="locationMap" class="mb-3"></div>
-          <div id="locationDebugInfo" class="text-xs text-red-600 dark:text-red-400 space-y-1"></div>
-        </div>
-      </div>
-
-      <!-- 모드 표시기 (설정 로드 전 숨김) -->
-      <div id="modeBadge" class="flex items-center justify-center gap-2 mb-6 hidden">
-        <div id="modeBadgeContent" class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold">
-        </div>
-      </div>
-
-      <!-- ===================== -->
-      <!-- 실외 모드 (GPS 기반) -->
-      <!-- ===================== -->
-      <div id="outdoorSection" class="tab-content hidden">
-        <form id="attendanceForm" class="space-y-5">
-          <!-- 성명 -->
-          <div>
-            <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              성명 <span class="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="name"
-              placeholder="홍길동"
-              maxlength="20"
-              required
-              class="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none input-focus-ring transition-all duration-200"
-            >
-            <p id="name-validation" class="mt-1.5 text-sm text-red-500 hidden"></p>
-          </div>
-
-          <!-- 소속 -->
-          <div>
-            <label for="department" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              소속 <span class="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="department"
-              placeholder="경영학과, 교무팀 등"
-              maxlength="50"
-              required
-              class="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none input-focus-ring transition-all duration-200"
-            >
-            <p id="department-validation" class="mt-1.5 text-sm text-red-500 hidden"></p>
-          </div>
-
-          <!-- 이메일 (선택) -->
-          <div>
-            <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              이메일 <span class="text-gray-400 font-normal">(선택)</span>
-            </label>
-            <input
-              type="email"
-              id="email"
-              placeholder="example@yiu.ac.kr"
-              maxlength="100"
-              autocomplete="email"
-              class="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none input-focus-ring transition-all duration-200"
-            >
-            <p class="mt-1.5 text-xs text-gray-400 dark:text-gray-500">출석 확인 이메일을 받으시려면 입력하세요</p>
-            <p id="email-validation" class="mt-1 text-sm text-red-500 hidden"></p>
-          </div>
-
-          <!-- 출석 버튼 -->
-          <button
-            type="submit"
-            id="submitBtn"
-            disabled
-            class="w-full py-4 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:shadow-none transform hover:-translate-y-0.5 disabled:translate-y-0 transition-all duration-200"
-          >
-            <span id="submitBtnText">위치 확인 후 출석 체크</span>
-          </button>
-
-          <!-- 위치 재확인 버튼 -->
-          <button
-            type="button"
-            id="locationBtn"
-            onclick="recheckLocation()"
-            class="w-full py-3.5 px-6 rounded-xl font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border-2 border-indigo-200 dark:border-indigo-800 transition-all duration-200"
-          >
-            <span class="flex items-center justify-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
-              위치 다시 확인하기
-            </span>
-          </button>
-        </form>
-      </div>
-
-      <!-- ===================== -->
-      <!-- 실내 모드 (QR 기반) -->
-      <!-- ===================== -->
-      <div id="indoorSection" class="tab-content hidden">
-        <!-- QR 스캐너 -->
-        <div id="indoorQrArea" class="mb-6">
-          <div id="qr-reader" class="mb-4 rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-slate-600"></div>
-
-          <!-- QR 스캔 버튼 -->
-          <div id="qrControls" class="space-y-3 mb-6">
-            <button
-              id="startScanBtn"
-              onclick="startQRScanner()"
-              class="w-full py-4 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
-            >
-              <span class="flex items-center justify-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
-                </svg>
-                QR 코드 스캔 시작
-              </span>
-            </button>
-            <button
-              id="stopScanBtn"
-              onclick="stopQRScanner()"
-              class="w-full py-3 px-6 rounded-xl font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 hidden transition-all duration-200"
-            >
-              스캔 중지
-            </button>
-          </div>
-
-          <!-- QR 스캔 성공 배지 -->
-          <div id="qrSuccessBadge" class="hidden mb-4">
-            <div class="p-3 bg-green-50 dark:bg-green-900/30 rounded-xl border-2 border-green-200 dark:border-green-800">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                  </svg>
-                </div>
-                <div>
-                  <p class="font-semibold text-green-800 dark:text-green-400 text-sm">QR 인증 완료!</p>
-                  <p id="qrSessionInfo" class="text-xs text-green-600 dark:text-green-500"></p>
-                </div>
-              </div>
-            </div>
+            <div id="locationMap" class="mb-3"></div>
+            <div id="locationDebugInfo" class="text-xs text-red-600 dark:text-red-400 space-y-1"></div>
           </div>
         </div>
 
-        <!-- GPS 참고 정보 (실내 모드) -->
-        <div id="indoorGpsInfo" class="mb-4 p-3 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700">
-          <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-            <span id="indoorGpsText">GPS 위치 수집 중... (참고용)</span>
-          </div>
+        <div class="space-y-3">
+          <button id="btn-gps-submit" class="btn-primary" onclick="doSubmit()" disabled>출석 체크하기</button>
+          <button id="btn-gps-recheck" class="btn-secondary" onclick="recheckLocation()">📡 위치 다시 확인</button>
+          <button class="btn-secondary" onclick="goBackFromVerify()">이전</button>
         </div>
-
-        <!-- 실내 모드 출석 폼 -->
-        <form id="indoorAttendanceForm" class="space-y-5">
-          <div>
-            <label for="indoorName" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              성명 <span class="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="indoorName"
-              placeholder="홍길동"
-              maxlength="20"
-              required
-              class="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none input-focus-ring transition-all duration-200"
-            >
-            <p id="indoorName-validation" class="mt-1.5 text-sm text-red-500 hidden"></p>
-          </div>
-
-          <div>
-            <label for="indoorDepartment" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              소속 <span class="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="indoorDepartment"
-              placeholder="경영학과, 교무팀 등"
-              maxlength="50"
-              required
-              class="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none input-focus-ring transition-all duration-200"
-            >
-            <p id="indoorDepartment-validation" class="mt-1.5 text-sm text-red-500 hidden"></p>
-          </div>
-
-          <div>
-            <label for="indoorEmail" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              이메일 <span class="text-gray-400 font-normal">(선택)</span>
-            </label>
-            <input
-              type="email"
-              id="indoorEmail"
-              placeholder="example@yiu.ac.kr"
-              maxlength="100"
-              autocomplete="email"
-              class="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none input-focus-ring transition-all duration-200"
-            >
-            <p class="mt-1.5 text-xs text-gray-400 dark:text-gray-500">출석 확인 이메일을 받으시려면 입력하세요</p>
-          </div>
-
-          <button
-            type="submit"
-            id="indoorSubmitBtn"
-            disabled
-            class="w-full py-4 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:shadow-none transform hover:-translate-y-0.5 disabled:translate-y-0 transition-all duration-200"
-          >
-            <span id="indoorSubmitBtnText">QR 스캔 후 출석 체크</span>
-          </button>
-        </form>
       </div>
 
-      <!-- 출석 확인증 -->
-      <div id="completionMessage" class="hidden mt-6">
+      <!-- ──────────────────────────────────────── -->
+      <!-- STEP 4b: QR 스캔 (실내 모드)             -->
+      <!-- ──────────────────────────────────────── -->
+      <div id="screen-qr" class="step-screen">
+        <div class="step-icon bg-indigo-100 dark:bg-indigo-900/40">
+          <svg class="w-10 h-10 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+          </svg>
+        </div>
+        <p class="step-title">QR 코드 스캔</p>
+        <p class="step-desc">화면에 표시된 QR 코드를&nbsp;스캔해 주세요</p>
+
+        <div id="qr-reader" class="mb-4 rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-slate-600"></div>
+
+        <div id="qrControls" class="space-y-3">
+          <button id="startScanBtn" onclick="startQRScanner()" class="btn-primary">📷 QR 코드 스캔 시작</button>
+          <button id="stopScanBtn" onclick="stopQRScanner()" class="btn-secondary hidden">⏹ 스캔 중지</button>
+        </div>
+
+        <!-- QR 성공 -->
+        <div id="qrSuccessBadge" class="hidden mt-4 p-4 bg-green-50 dark:bg-green-900/30 rounded-2xl border-2 border-green-300 dark:border-green-700 text-center">
+          <div class="text-green-600 dark:text-green-400 text-3xl mb-1">✅</div>
+          <p class="font-bold text-green-800 dark:text-green-300 text-lg">QR 인증 완료!</p>
+          <p id="qrSessionInfo" class="text-sm text-green-600 dark:text-green-500 mt-1"></p>
+        </div>
+
+        <div class="mt-4 space-y-3">
+          <button id="btn-qr-submit" class="btn-primary hidden" onclick="doSubmit()">출석 체크하기</button>
+          <button class="btn-secondary" onclick="goBackFromVerify()">이전</button>
+        </div>
+      </div>
+
+      <!-- ──────────────────────────────────────── -->
+      <!-- STEP 5: 완료 화면                        -->
+      <!-- ──────────────────────────────────────── -->
+      <div id="screen-done" class="step-screen">
         <div id="certificateCard" class="certificate-card">
-          <!-- 확인증 헤더 -->
           <div class="certificate-header">
             <div class="w-16 h-16 mx-auto mb-3 bg-white/20 rounded-full flex items-center justify-center">
               <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -576,58 +636,49 @@
             <h3 class="text-xl font-bold mb-1">출석 확인증</h3>
             <div class="certificate-confirm-number" id="certConfirmNumber">------</div>
           </div>
-          <!-- 확인증 본문 -->
           <div class="certificate-body">
             <div class="certificate-grid">
-              <div class="certificate-grid-item">
-                <div class="label">성명</div>
-                <div class="value" id="certName">-</div>
-              </div>
-              <div class="certificate-grid-item">
-                <div class="label">소속</div>
-                <div class="value" id="certDept">-</div>
-              </div>
-              <div class="certificate-grid-item">
-                <div class="label">출석 시간</div>
-                <div class="value" id="certTime">-</div>
-              </div>
-              <div class="certificate-grid-item">
-                <div class="label">인증 방식</div>
-                <div class="value" id="certMethod">-</div>
-              </div>
+              <div class="certificate-grid-item"><div class="label">성명</div><div class="value" id="certName">-</div></div>
+              <div class="certificate-grid-item"><div class="label">소속</div><div class="value" id="certDept">-</div></div>
+              <div class="certificate-grid-item"><div class="label">출석 시간</div><div class="value" id="certTime">-</div></div>
+              <div class="certificate-grid-item"><div class="label">인증 방식</div><div class="value" id="certMethod">-</div></div>
             </div>
             <div class="certificate-meeting">
               <div class="label">회의명</div>
               <div class="value" id="certMeeting">-</div>
             </div>
-            <div class="certificate-footer">
-              용인대학교 교직원 출석 시스템
-            </div>
+            <div class="certificate-footer">용인대학교 교직원 출석 시스템</div>
           </div>
         </div>
-        <!-- 안내 문구 -->
-        <div class="text-center mt-4 px-4">
-          <p class="text-sm text-gray-500 dark:text-gray-400">출석이 정상적으로 처리되었습니다. 이 기기에서는 추가 출석이 제한됩니다.</p>
+        <div class="text-center mt-4">
+          <p class="text-sm text-gray-500 dark:text-gray-400">출석이 정상 처리되었습니다.</p>
         </div>
-        <!-- 확인증 저장 버튼 -->
         <div class="text-center mt-3">
-          <button
-            onclick="captureAttendanceCertificate()"
-            class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-            </svg>
-            확인증 저장
+          <button onclick="captureAttendanceCertificate()"
+            class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 text-base">
+            ⬇ 확인증 저장
           </button>
         </div>
+      </div>
+
+      <!-- ──────────────────────────────────────── -->
+      <!-- STEP X: 유효하지 않은 QR                 -->
+      <!-- ──────────────────────────────────────── -->
+      <div id="screen-invalid-qr" class="step-screen text-center py-6">
+        <div class="step-icon bg-red-100 dark:bg-red-900/40">
+          <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <p class="step-title">유효하지 않은<br>QR 코드</p>
+        <p class="step-desc">이전 회의의 QR 코드이거나 만료된 QR 코드입니다.<br>관리자에게 현재 회의 QR 코드를 요청해 주세요.</p>
       </div>
 
       <!-- 로딩 오버레이 -->
       <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-2xl text-center max-w-sm mx-4">
           <div class="spinner w-12 h-12 mx-auto mb-4"></div>
-          <p id="loadingText" class="font-medium text-gray-700 dark:text-gray-300">처리중입니다...</p>
+          <p id="loadingText" class="font-medium text-gray-700 dark:text-gray-300 text-lg">처리중입니다...</p>
         </div>
       </div>
     </div>
@@ -642,8 +693,8 @@
             </svg>
           </div>
           <div>
-            <p class="font-bold text-gray-900 dark:text-white text-sm">내 출석 확인</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400">이름과 소속으로 출석 여부를 조회합니다</p>
+            <p class="font-bold text-gray-900 dark:text-white">내 출석 확인</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">이름과 소속으로 출석 여부를 조회합니다</p>
           </div>
         </div>
         <svg id="attendanceCheckArrow" class="w-5 h-5 text-gray-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -653,32 +704,17 @@
       <div id="attendanceCheckContent" class="attendance-check-content">
         <div class="px-5 pb-5 space-y-4">
           <div>
-            <label for="checkName" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">성명</label>
-            <input
-              type="text"
-              id="checkName"
-              placeholder="홍길동"
-              maxlength="20"
-              class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none input-focus-ring transition-all duration-200 text-sm"
-            >
+            <label for="checkName" class="label-lg">성명</label>
+            <input type="text" id="checkName" placeholder="홍길동" maxlength="20"
+              class="input-lg" style="font-size:1rem;padding:0.75rem 1rem;">
           </div>
           <div>
-            <label for="checkDept" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">소속</label>
-            <input
-              type="text"
-              id="checkDept"
-              placeholder="경영학과, 교무팀 등"
-              maxlength="50"
-              class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none input-focus-ring transition-all duration-200 text-sm"
-            >
+            <label for="checkDept" class="label-lg">소속</label>
+            <input type="text" id="checkDept" placeholder="경영학과, 교무팀 등" maxlength="50"
+              class="input-lg" style="font-size:1rem;padding:0.75rem 1rem;">
           </div>
-          <button
-            onclick="checkMyAttendance()"
-            id="checkAttendanceBtn"
-            class="w-full py-3 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 text-sm"
-          >
-            출석 조회
-          </button>
+          <button onclick="checkMyAttendance()" id="checkAttendanceBtn"
+            class="btn-primary" style="font-size:1rem;padding:0.85rem;">출석 조회</button>
           <div id="attendanceCheckResult"></div>
         </div>
       </div>
@@ -687,104 +723,66 @@
     <!-- 푸터 -->
     <div class="text-center py-4 text-white/70 text-sm">
       <p>용인대학교 교직원 출석 시스템 &copy; <script>document.write(new Date().getFullYear())</script></p>
-      <p class="text-xs mt-1 text-white/50">QR + GPS 이중 인증</p>
     </div>
   </div>
 
-  <script>
-    // ========================================
-    // 설정 및 전역 변수
-    // ========================================
 
+  <script>
+    // =====================================================================
+    // 설정 및 전역 상태
+    // =====================================================================
     const CONFIG = {
       BACKEND_URL: 'https://script.google.com/macros/s/AKfycbyYZ5xoqKL36ox70sg-4nvK6jDTAJIuHvLK7A1EoQQxxyOe3doSaIp2hlEEDn3xXdkGAQ/exec',
-      DEFAULT_LOCATION: {
-        latitude: 37.2420,
-        longitude: 127.1775,
-        radius: 1200
-      },
+      DEFAULT_LOCATION: { latitude: 37.2420, longitude: 127.1775, radius: 1200 },
       REQUEST_TIMEOUT: 30000,
       QR_TOKEN_PREFIX: 'YU_QR_'
     };
 
     let state = {
-      isLocationValid: false,
-      isQrVerified: false,
       isSystemReady: false,
       isCompleted: false,
       isSubmitting: false,
+      isQrVerified: false,
+      isLocationValid: false,
+      emailEnabled: true,
+      locationMode: 'outdoor',
+      locationSettings: { latitude: 37.2420, longitude: 127.1775, radius: 1200 },
       lastKnownPosition: null,
-      locationSettings: { ...CONFIG.DEFAULT_LOCATION },
+      locationMap: null,
       deviceInfo: null,
       qrScanner: null,
       qrToken: null,
-      locationMode: 'outdoor',
       deviceId: null,
       currentEventId: null,
       preventProxy: false,
-      locationMap: null,
       qrEntryFlag: false,
       qrEventId: null
     };
 
-    // ========================================
+    // =====================================================================
     // 초기화
-    // ========================================
-
-    document.addEventListener('DOMContentLoaded', function() {
-      initializeSystem();
+    // =====================================================================
+    document.addEventListener('DOMContentLoaded', function () {
       initializeDarkMode();
-      setupEventListeners();
-    });
+      state.deviceId = getDeviceId();
+      collectDeviceInfo();
 
-    function initializeSystem() {
-      console.log('시스템 초기화 시작');
-
-      // QR 코드 진입 감지 후 URL 파라미터 제거
       const urlParams = new URLSearchParams(window.location.search);
       state.qrEntryFlag = urlParams.get('qr') === '1';
       state.qrEventId = urlParams.get('eid') || null;
-      if (state.qrEntryFlag) {
-        history.replaceState(null, '', window.location.pathname);
-      }
+      if (state.qrEntryFlag) history.replaceState(null, '', window.location.pathname);
 
-      // 기기 ID 생성/조회
-      state.deviceId = getDeviceId();
-
-      // 기기 정보 수집
-      collectDeviceInfo();
-
-      // 시스템 준비 완료
-      state.isSystemReady = true;
-      updateStatus('설정을 불러오고 있습니다...', 'checking');
-
-      // 설정 즉시 로드 (모드 적용 포함)
       loadSettingsFromServer();
-
-      // 현재 이벤트 ID 조회
       fetchCurrentEventId();
-
-      console.log('시스템 초기화 완료');
-    }
+    });
 
     function getDeviceId() {
-      let deviceId = localStorage.getItem('yiu_device_id');
-      if (!deviceId) {
-        deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('yiu_device_id', deviceId);
+      let id = localStorage.getItem('yiu_device_id');
+      if (!id) {
+        id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('yiu_device_id', id);
       }
-      return deviceId;
-    }
-
-    function fetchCurrentEventId() {
-      callGoogleScript('getSystemStatus', null)
-        .then(result => {
-          if (result && result.success && result.currentEventId) {
-            state.currentEventId = result.currentEventId;
-            checkAlreadyAttended();
-          }
-        })
-        .catch(() => {});
+      return id;
     }
 
     function collectDeviceInfo() {
@@ -793,7 +791,7 @@
         platform: navigator.platform || 'unknown',
         language: navigator.language || 'ko',
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Seoul',
-        screenInfo: `${screen.width}x${screen.height}x${screen.colorDepth || 24}`,
+        screenInfo: screen.width + 'x' + screen.height + 'x' + (screen.colorDepth || 24),
         touchPoints: navigator.maxTouchPoints || 0,
         timestamp: Date.now()
       };
@@ -802,10 +800,7 @@
     function initializeDarkMode() {
       const isDark = localStorage.getItem('darkMode') === 'true' ||
                      (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-      if (isDark) {
-        document.documentElement.classList.add('dark');
-      }
+      if (isDark) document.documentElement.classList.add('dark');
     }
 
     function toggleDarkMode() {
@@ -813,1223 +808,710 @@
       localStorage.setItem('darkMode', isDark);
     }
 
-
-    // ========================================
-    // 이벤트 리스너
-    // ========================================
-
-    function setupEventListeners() {
-      // 실외 모드 폼 입력 검증
-      ['name', 'department', 'email'].forEach(field => {
-        const el = document.getElementById(field);
-        if (el) {
-          el.addEventListener('input', () => {
-            validateField(field);
-            validateForm();
-          });
-          el.addEventListener('blur', () => validateField(field));
-        }
-      });
-
-      // 실내 모드 폼 입력 검증
-      ['indoorName', 'indoorDepartment'].forEach(field => {
-        const el = document.getElementById(field);
-        if (el) {
-          el.addEventListener('input', () => validateIndoorForm());
-          el.addEventListener('blur', () => validateIndoorForm());
-        }
-      });
-
-      // 실외 모드 폼 제출
-      document.getElementById('attendanceForm').addEventListener('submit', handleFormSubmit);
-
-      // 실내 모드 폼 제출
-      document.getElementById('indoorAttendanceForm').addEventListener('submit', handleIndoorFormSubmit);
-    }
-
-    // ========================================
+    // =====================================================================
     // 설정 로드
-    // ========================================
-
+    // =====================================================================
     function loadSettingsFromServer() {
       callGoogleScript('getSettings', null)
         .then(result => {
-          if (result && typeof result === 'object') {
-            updateSettingsFromServer(result);
-          } else {
-            applyLocationMode('outdoor');
+          if (result && typeof result === 'object') applySettings(result);
+          else showStartScreen('outdoor');
+        })
+        .catch(() => showStartScreen('outdoor'));
+    }
+
+    function applySettings(settings) {
+      if (settings.meeting_title) {
+        document.querySelectorAll('#meetingTitle, #startTitle').forEach(el => {
+          if (el) el.textContent = settings.meeting_title;
+        });
+      }
+      if (settings.target_latitude)  state.locationSettings.latitude  = parseFloat(settings.target_latitude);
+      if (settings.target_longitude) state.locationSettings.longitude = parseFloat(settings.target_longitude);
+      if (settings.location_radius)  state.locationSettings.radius    = parseFloat(settings.location_radius);
+
+      state.preventProxy = settings.prevent_proxy_attendance === true || settings.prevent_proxy_attendance === 'true';
+      state.emailEnabled = settings.email_enabled !== 'false';
+      state.locationMode = settings.location_mode || 'outdoor';
+
+      if (state.currentEventId && hasAlreadyAttended(state.currentEventId)) {
+        showDoneFromStorage(state.currentEventId);
+        return;
+      }
+
+      if (state.locationMode === 'indoor' && state.qrEntryFlag && !state.isCompleted) {
+        if (!state.qrEventId || state.qrEventId !== settings.current_event_id) {
+          goToScreen('screen-invalid-qr');
+        } else {
+          state.isQrVerified = true;
+          state.qrToken = state.qrEventId;
+          showStartScreen('indoor');
+        }
+        return;
+      }
+
+      showStartScreen(state.locationMode);
+    }
+
+    function showStartScreen(mode) {
+      state.locationMode = mode;
+      state.isSystemReady = true;
+      goToScreen('screen-start');
+    }
+
+    function fetchCurrentEventId() {
+      callGoogleScript('getSystemStatus', null)
+        .then(result => {
+          if (result && result.success && result.currentEventId) {
+            state.currentEventId = result.currentEventId;
+            if (hasAlreadyAttended(state.currentEventId)) {
+              showDoneFromStorage(state.currentEventId);
+            }
           }
         })
-        .catch(err => {
-          console.log('설정 로드 실패, 기본값 사용');
-          applyLocationMode('outdoor');
-        });
+        .catch(() => {});
     }
 
-    function updateSettingsFromServer(settings) {
-      if (settings.meeting_title) {
-        document.getElementById('meetingTitle').textContent = settings.meeting_title;
-      }
-      if (settings.meeting_description) {
-        document.getElementById('meetingDescription').textContent = settings.meeting_description;
-      }
-      if (settings.target_latitude && settings.target_longitude) {
-        state.locationSettings.latitude = parseFloat(settings.target_latitude);
-        state.locationSettings.longitude = parseFloat(settings.target_longitude);
-      }
-      if (settings.location_radius) {
-        state.locationSettings.radius = parseFloat(settings.location_radius);
-      }
-
-      // 대리 출석 방지 설정
-      state.preventProxy = settings.prevent_proxy_attendance === true || settings.prevent_proxy_attendance === 'true';
-      checkAlreadyAttended();
-
-      // 출석 모드 적용
-      const newMode = settings.location_mode || 'outdoor';
-      state.locationMode = newMode;
-      applyLocationMode(newMode);
-
-      // QR로 진입한 사용자: 실내 모드일 때 자동 인증
-      if (newMode === 'indoor' && state.qrEntryFlag && !state.isQrVerified && !state.isCompleted) {
-        // QR의 회의 ID가 현재 회의와 일치하는지 검증
-        if (!state.qrEventId || state.qrEventId !== settings.current_event_id) {
-          showInvalidQrScreen();
-        } else {
-          handleIndoorQrVerified();
-        }
+    // =====================================================================
+    // 단계별 화면 전환
+    // =====================================================================
+    function goToScreen(id) {
+      document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById(id);
+      if (target) {
+        target.classList.add('active');
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
 
-    function applyLocationMode(mode) {
-      const outdoorSection = document.getElementById('outdoorSection');
-      const indoorSection = document.getElementById('indoorSection');
-      const statusIndicator = document.getElementById('statusIndicator');
-      const modeBadge = document.getElementById('modeBadge');
-      const modeBadgeContent = document.getElementById('modeBadgeContent');
+    function goToNameStep() {
+      goToScreen('screen-name');
+      setTimeout(() => {
+        const el = document.getElementById('inputName');
+        if (el) el.focus();
+      }, 300);
+    }
 
-      // 설정 로드 완료 후 배지 표시
-      modeBadge.classList.remove('hidden');
+    function goToDeptStep() {
+      const name = document.getElementById('inputName').value.trim();
+      if (name.length < 2) { showStepError('nameError', '성명을 2자 이상 입력해 주세요'); return; }
+      hideStepError('nameError');
+      goToScreen('screen-dept');
+      setTimeout(() => {
+        const el = document.getElementById('inputDept');
+        if (el) el.focus();
+      }, 300);
+    }
 
-      if (mode === 'indoor') {
-        // 실내 모드: QR 스캔 기반
-        outdoorSection.classList.add('hidden');
-        indoorSection.classList.remove('hidden');
-
-        modeBadgeContent.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-700';
-        modeBadgeContent.innerHTML = `
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
-          </svg>
-          QR 스캔 모드
-        `;
-
-        updateStatus('QR 코드를 스캔하여 출석을 인증하세요', 'checking');
-
-        // GPS는 참고용으로 백그라운드 수집
-        startIndoorGpsCollection();
+    function goToEmailOrVerifyStep() {
+      const dept = document.getElementById('inputDept').value.trim();
+      if (dept.length < 2) { showStepError('deptError', '소속을 2자 이상 입력해 주세요'); return; }
+      hideStepError('deptError');
+      if (state.emailEnabled) {
+        goToScreen('screen-email');
+        setTimeout(() => {
+          const el = document.getElementById('inputEmail');
+          if (el) el.focus();
+        }, 300);
       } else {
-        // 실외 모드: GPS 기반
-        indoorSection.classList.add('hidden');
-        outdoorSection.classList.remove('hidden');
-
-        modeBadgeContent.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-700';
-        modeBadgeContent.innerHTML = `
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
-          GPS 검증 모드
-        `;
-
-        updateStatus('위치 확인이 필요합니다', 'checking');
-
-        // GPS 위치 확인 시작
-        setTimeout(startLocationCheck, 500);
+        goToVerifyStep();
       }
     }
 
-    function startIndoorGpsCollection() {
-      if (!navigator.geolocation) {
-        document.getElementById('indoorGpsText').textContent = 'GPS 미지원 기기';
-        return;
+    function goToVerifyStep() {
+      if (state.emailEnabled) {
+        const email = document.getElementById('inputEmail').value.trim();
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showStepError('emailError', '올바른 이메일 형식을 입력해 주세요');
+          return;
+        }
+        hideStepError('emailError');
       }
-
-      navigator.geolocation.getCurrentPosition(
-        position => {
-          state.lastKnownPosition = position;
-          const { latitude, longitude, accuracy } = position.coords;
-          const { latitude: targetLat, longitude: targetLng } = state.locationSettings;
-          const distance = calculateDistance(latitude, longitude, targetLat, targetLng);
-
-          document.getElementById('indoorGpsText').textContent =
-            `GPS 참고: 회의실에서 약 ${Math.round(distance)}m (정확도 ${Math.round(accuracy)}m)`;
-        },
-        () => {
-          document.getElementById('indoorGpsText').textContent = 'GPS 위치를 가져올 수 없습니다 (참고용)';
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-      );
+      if (state.locationMode === 'indoor') {
+        goToScreen('screen-qr');
+        if (state.isQrVerified) showQrSuccess();
+      } else {
+        goToScreen('screen-gps');
+        setTimeout(startLocationCheck, 400);
+      }
     }
 
-    // ========================================
-    // 위치 확인
-    // ========================================
+    function goBackFromVerify() {
+      if (state.locationMode === 'indoor') stopQRScanner();
+      if (state.emailEnabled) goToScreen('screen-email');
+      else goToScreen('screen-dept');
+    }
 
+    function validateStepInput(inputId, errorId, btnId, minLen) {
+      const val  = document.getElementById(inputId).value.trim();
+      const btn  = document.getElementById(btnId);
+      const errEl = document.getElementById(errorId);
+      if (val.length >= minLen) {
+        if (btn)  btn.disabled = false;
+        if (errEl) errEl.classList.add('hidden');
+      } else {
+        if (btn) btn.disabled = true;
+      }
+    }
+
+    function validateEmailInput() {
+      const email = document.getElementById('inputEmail').value.trim();
+      const errEl = document.getElementById('emailError');
+      const btn   = document.getElementById('btn-email-next');
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        if (errEl) { errEl.textContent = '올바른 이메일 형식을 입력해 주세요'; errEl.classList.remove('hidden'); }
+        if (btn)  btn.disabled = true;
+      } else {
+        if (errEl) errEl.classList.add('hidden');
+        if (btn)  btn.disabled = false;
+      }
+    }
+
+    function showStepError(errorId, msg) {
+      const el = document.getElementById(errorId);
+      if (el) { el.textContent = msg; el.classList.remove('hidden'); }
+    }
+
+    function hideStepError(errorId) {
+      const el = document.getElementById(errorId);
+      if (el) el.classList.add('hidden');
+    }
+
+    // =====================================================================
+    // GPS (실외 모드)
+    // =====================================================================
     function startLocationCheck() {
       if (!navigator.geolocation) {
-        updateStatus('이 기기는 위치 확인을 지원하지 않습니다', 'error');
+        setGpsStatus('GPS를 지원하지 않는 기기입니다', 'error');
         return;
       }
-
-      updateStatus('위치를 확인하고 있습니다...', 'checking');
-
+      setGpsStatus('📡 위치를 확인하고 있습니다...', 'checking');
       navigator.geolocation.getCurrentPosition(
-        handleLocationSuccess,
-        handleLocationError,
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 60000
-        }
+        handleLocationSuccess, handleLocationError,
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
       );
     }
 
     function handleLocationSuccess(position) {
       state.lastKnownPosition = position;
+      const { latitude: uLat, longitude: uLng, accuracy } = position.coords;
+      const { latitude: tLat, longitude: tLng } = state.locationSettings;
+      const dist    = calculateDistance(uLat, uLng, tLat, tLng);
+      const allowed = calculateAllowedRadius(accuracy);
+      const gpsBtn  = document.getElementById('btn-gps-submit');
 
-      const { latitude: userLat, longitude: userLng, accuracy } = position.coords;
-      const { latitude: targetLat, longitude: targetLng, radius } = state.locationSettings;
-
-      const distance = calculateDistance(userLat, userLng, targetLat, targetLng);
-      const allowedRadius = calculateAllowedRadius(accuracy);
-
-      console.log(`위치: ${userLat}, ${userLng}, 거리: ${distance}m, 허용: ${allowedRadius}m, 정확도: ${accuracy}m`);
-
-      if (distance <= allowedRadius) {
+      if (dist <= allowed) {
         state.isLocationValid = true;
         hideLocationMap();
-
-        let message = '위치 확인 완료';
-        if (distance < 100) message += ' - 매우 가까움';
-        else if (distance < 500) message += ` - 가까움 (${Math.round(distance)}m)`;
-        else message += ` - 실내 환경 (${Math.round(distance)}m)`;
-
-        updateStatus(message, 'ready');
-        validateForm();
-
-        if (distance > 800) {
-          showToast('위치 확인 완료! 실내 GPS 오차를 고려하여 허용되었습니다.', 'success');
-        }
+        const msg = '✅ 위치 확인 완료' + (dist < 100 ? ' — 매우 가까움' : ' — ' + Math.round(dist) + 'm');
+        setGpsStatus(msg, 'ready');
+        if (gpsBtn) gpsBtn.disabled = false;
       } else {
         state.isLocationValid = false;
-        updateStatus(`회의실에서 ${Math.round(distance)}m 떨어져 있습니다`, 'error');
-        showToast(`허용 거리(${allowedRadius}m)를 초과했습니다. 창가로 이동하거나 WiFi를 켜주세요.`, 'error');
-        showLocationMap(userLat, userLng, targetLat, targetLng, distance, allowedRadius, accuracy);
-        validateForm();
+        setGpsStatus('❌ 회의실에서 ' + Math.round(dist) + 'm 떨어져 있습니다', 'error');
+        if (gpsBtn) gpsBtn.disabled = true;
+        showLocationMap(uLat, uLng, tLat, tLng, dist, allowed, accuracy);
       }
     }
 
     function handleLocationError(error) {
       state.isLocationValid = false;
-
-      let message = '위치 확인이 필요합니다';
-      let toastMsg = '';
-
-      switch(error.code) {
-        case error.PERMISSION_DENIED:
-          message = '위치 권한이 필요합니다';
-          toastMsg = '브라우저에서 위치 권한을 허용해 주세요.';
-          break;
-        case error.POSITION_UNAVAILABLE:
-          message = 'GPS 신호가 약합니다';
-          toastMsg = '창가로 이동하거나 WiFi를 켜주세요.';
-          break;
-        case error.TIMEOUT:
-          message = '위치 확인 시간 초과';
-          toastMsg = '다시 시도해 주세요.';
-          break;
-      }
-
-      updateStatus(message, 'checking');
-      if (toastMsg) showToast(toastMsg, 'warning');
-      validateForm();
+      const msgs = {
+        1: '위치 권한을 허용해 주세요',
+        2: 'GPS 신호가 약합니다. 창가로 이동해 주세요',
+        3: '위치 확인 시간이 초과되었습니다'
+      };
+      setGpsStatus('⚠️ ' + (msgs[error.code] || '위치 확인에 실패했습니다'), 'error');
+      const gpsBtn = document.getElementById('btn-gps-submit');
+      if (gpsBtn) gpsBtn.disabled = true;
     }
 
     function recheckLocation() {
-      const btn = document.getElementById('locationBtn');
-      btn.disabled = true;
-      btn.innerHTML = `
-        <span class="flex items-center justify-center gap-2">
-          <div class="spinner w-5 h-5"></div>
-          위치 확인중...
-        </span>
-      `;
-
-      updateStatus('위치를 다시 확인하고 있습니다...', 'checking');
-
+      const btn = document.getElementById('btn-gps-recheck');
+      if (btn) { btn.disabled = true; btn.textContent = '확인 중...'; }
+      setGpsStatus('📡 위치를 다시 확인하고 있습니다...', 'checking');
       navigator.geolocation.getCurrentPosition(
-        position => {
-          btn.disabled = false;
-          btn.innerHTML = `
-            <span class="flex items-center justify-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
-              위치 다시 확인하기
-            </span>
-          `;
-          handleLocationSuccess(position);
-          if (state.isLocationValid) showToast('위치 재확인 완료!', 'success');
+        pos => {
+          if (btn) { btn.disabled = false; btn.textContent = '📡 위치 다시 확인'; }
+          handleLocationSuccess(pos);
         },
-        error => {
-          btn.disabled = false;
-          btn.innerHTML = `
-            <span class="flex items-center justify-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
-              위치 다시 확인하기
-            </span>
-          `;
-          handleLocationError(error);
+        err => {
+          if (btn) { btn.disabled = false; btn.textContent = '📡 위치 다시 확인'; }
+          handleLocationError(err);
         },
         { enableHighAccuracy: true, timeout: 20000, maximumAge: 10000 }
       );
     }
 
+    function setGpsStatus(msg, type) {
+      const el = document.getElementById('gpsStatusBar');
+      if (!el) return;
+      el.className = 'status-bar status-' + type;
+      el.textContent = msg;
+    }
+
     function calculateDistance(lat1, lng1, lat2, lng2) {
-      const R = 6371000;
+      const R    = 6371000;
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLng = (lng2 - lng1) * Math.PI / 180;
-
-      const a = Math.sin(dLat / 2) ** 2 +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLng / 2) ** 2;
-
+      const a    = Math.sin(dLat / 2) ** 2 +
+                   Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
     function calculateAllowedRadius(accuracy) {
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      let multiplier = isMobile ? 1.2 : 1.8;
-
-      if (accuracy > 500) multiplier *= 1.3;
-      else if (accuracy > 200) multiplier *= 1.1;
-
-      let radius = state.locationSettings.radius * multiplier;
-      return Math.max(300, Math.min(2500, Math.round(radius)));
+      const mob = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      let m = mob ? 1.2 : 1.8;
+      if (accuracy > 500) m *= 1.3;
+      else if (accuracy > 200) m *= 1.1;
+      return Math.max(300, Math.min(2500, Math.round(state.locationSettings.radius * m)));
     }
 
-    // ========================================
-    // 위치 지도 (거리 초과 시 표시)
-    // ========================================
-
-    function showLocationMap(userLat, userLng, targetLat, targetLng, distance, allowedRadius, accuracy) {
-      const mapCard = document.getElementById('locationMapCard');
-      mapCard.classList.remove('collapsed');
-      mapCard.classList.add('expanded');
-
-      // 지도 초기화 (이미 존재하면 제거 후 재생성)
-      if (state.locationMap) {
-        state.locationMap.remove();
-        state.locationMap = null;
-      }
-
-      // 약간의 지연 후 지도 생성 (CSS 트랜지션 대기)
+    // ---- 위치 지도 ----
+    function showLocationMap(uLat, uLng, tLat, tLng, dist, allowed, acc) {
+      const card = document.getElementById('locationMapCard');
+      if (!card) return;
+      card.classList.remove('collapsed');
+      card.classList.add('expanded');
+      if (state.locationMap) { state.locationMap.remove(); state.locationMap = null; }
       setTimeout(() => {
+        if (typeof L === 'undefined') return;
         const map = L.map('locationMap', { zoomControl: true, attributionControl: false });
         state.locationMap = map;
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19
-        }).addTo(map);
+        function mkIcon(color, svgPath) {
+          return L.divIcon({
+            className: '',
+            html: '<div style="width:32px;height:32px;border-radius:50%;background:' + color + ';border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center">' +
+                  '<svg width=16 height=16 viewBox="0 0 24 24" fill=white><path d="' + svgPath + '"/></svg></div>',
+            iconSize: [32, 32], iconAnchor: [16, 32]
+          });
+        }
+        const mkT = mkIcon('#4f46e5', 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z');
+        const mkU = mkIcon('#ef4444', 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z');
 
-        // 회의실 마커 (파란색)
-        const targetIcon = L.divIcon({
-          className: '',
-          html: `<div style="
-            width: 32px; height: 32px; border-radius: 50%;
-            background: #4f46e5; border: 3px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            display: flex; align-items: center; justify-content: center;
-          "><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>`,
-          iconSize: [32, 32],
-          iconAnchor: [16, 32],
-          popupAnchor: [0, -32]
-        });
+        L.marker([tLat, tLng], { icon: mkT }).addTo(map).bindPopup('<b>회의실</b>');
+        L.marker([uLat, uLng], { icon: mkU }).addTo(map).bindPopup('<b>내 위치</b>');
+        L.circle([tLat, tLng], { radius: allowed, color: '#4f46e5', fillColor: '#818cf8', fillOpacity: 0.1, weight: 2, dashArray: '5,5' }).addTo(map);
+        L.circle([uLat, uLng], { radius: acc, color: '#ef4444', fillColor: '#fca5a5', fillOpacity: 0.1, weight: 1 }).addTo(map);
+        L.polyline([[uLat, uLng], [tLat, tLng]], { color: '#f59e0b', weight: 2, dashArray: '8,4' }).addTo(map);
+        map.fitBounds(L.latLngBounds([[uLat, uLng], [tLat, tLng]]), { padding: [40, 40] });
 
-        // 사용자 마커 (빨간색)
-        const userIcon = L.divIcon({
-          className: '',
-          html: `<div style="
-            width: 32px; height: 32px; border-radius: 50%;
-            background: #ef4444; border: 3px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            display: flex; align-items: center; justify-content: center;
-          "><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`,
-          iconSize: [32, 32],
-          iconAnchor: [16, 32],
-          popupAnchor: [0, -32]
-        });
-
-        const targetMarker = L.marker([targetLat, targetLng], { icon: targetIcon })
-          .addTo(map)
-          .bindPopup(`<b>회의실</b><br>${targetLat.toFixed(6)}, ${targetLng.toFixed(6)}`);
-
-        const userMarker = L.marker([userLat, userLng], { icon: userIcon })
-          .addTo(map)
-          .bindPopup(`<b>내 위치</b><br>${userLat.toFixed(6)}, ${userLng.toFixed(6)}<br>정확도: ${Math.round(accuracy)}m`);
-
-        // 허용 반경 원 (파란색 반투명)
-        L.circle([targetLat, targetLng], {
-          radius: allowedRadius,
-          color: '#4f46e5',
-          fillColor: '#818cf8',
-          fillOpacity: 0.1,
-          weight: 2,
-          dashArray: '5, 5'
-        }).addTo(map);
-
-        // GPS 정확도 원 (빨간색 반투명)
-        L.circle([userLat, userLng], {
-          radius: accuracy,
-          color: '#ef4444',
-          fillColor: '#fca5a5',
-          fillOpacity: 0.1,
-          weight: 1,
-          dashArray: '3, 3'
-        }).addTo(map);
-
-        // 두 지점 사이 선
-        L.polyline([[userLat, userLng], [targetLat, targetLng]], {
-          color: '#f59e0b',
-          weight: 2,
-          dashArray: '8, 4'
-        }).addTo(map);
-
-        // 두 마커가 모두 보이도록 지도 범위 조정
-        const bounds = L.latLngBounds([[userLat, userLng], [targetLat, targetLng]]);
-        map.fitBounds(bounds, { padding: [40, 40] });
-
-        // 디버그 정보 표시
-        const debugInfo = document.getElementById('locationDebugInfo');
-        debugInfo.innerHTML = `
-          <div class="grid grid-cols-2 gap-2">
-            <div class="flex items-center gap-1">
-              <span class="inline-block w-3 h-3 rounded-full bg-red-500 flex-shrink-0"></span>
-              <span>내 위치: ${userLat.toFixed(6)}, ${userLng.toFixed(6)}</span>
-            </div>
-            <div class="flex items-center gap-1">
-              <span class="inline-block w-3 h-3 rounded-full bg-indigo-500 flex-shrink-0"></span>
-              <span>회의실: ${targetLat.toFixed(6)}, ${targetLng.toFixed(6)}</span>
-            </div>
-            <div>거리: <b>${Math.round(distance)}m</b></div>
-            <div>허용 반경: <b>${allowedRadius}m</b></div>
-            <div>GPS 정확도: <b>${Math.round(accuracy)}m</b></div>
-            <div>기본 반경: <b>${state.locationSettings.radius}m</b></div>
-          </div>
-          <p class="mt-2 text-red-500 dark:text-red-300 font-medium">
-            관리자에게 회의실 좌표 설정을 확인 요청하거나, WiFi를 켜고 창가에서 다시 시도해 주세요.
-          </p>
-        `;
+        const dbg = document.getElementById('locationDebugInfo');
+        if (dbg) dbg.innerHTML = '거리: <b>' + Math.round(dist) + 'm</b> / 허용: <b>' + allowed + 'm</b> / 정확도: <b>' + Math.round(acc) + 'm</b>';
       }, 100);
     }
 
     function hideLocationMap() {
-      const mapCard = document.getElementById('locationMapCard');
-      mapCard.classList.remove('expanded');
-      mapCard.classList.add('collapsed');
+      const card = document.getElementById('locationMapCard');
+      if (card) { card.classList.remove('expanded'); card.classList.add('collapsed'); }
     }
 
     function toggleLocationMap() {
-      const mapCard = document.getElementById('locationMapCard');
-      if (mapCard.classList.contains('expanded')) {
+      const card = document.getElementById('locationMapCard');
+      if (!card) return;
+      if (card.classList.contains('expanded')) {
         hideLocationMap();
       } else {
-        mapCard.classList.remove('collapsed');
-        mapCard.classList.add('expanded');
-        if (state.locationMap) {
-          setTimeout(() => state.locationMap.invalidateSize(), 400);
-        }
+        card.classList.remove('collapsed');
+        card.classList.add('expanded');
+        if (state.locationMap) setTimeout(() => state.locationMap.invalidateSize(), 400);
       }
     }
 
-    // ========================================
-    // QR 스캐너
-    // ========================================
-
+    // =====================================================================
+    // QR 스캐너 (실내 모드) — GPS 코드 없음
+    // =====================================================================
     function startQRScanner() {
-      if (state.qrScanner) {
-        stopQRScanner();
+      if (state.qrScanner) stopQRScanner();
+      const startBtn = document.getElementById('startScanBtn');
+      const stopBtn  = document.getElementById('stopScanBtn');
+      if (startBtn) startBtn.classList.add('hidden');
+      if (stopBtn)  stopBtn.classList.remove('hidden');
+      const badge = document.getElementById('qrSuccessBadge');
+      const subBtn = document.getElementById('btn-qr-submit');
+      if (badge) badge.classList.add('hidden');
+      if (subBtn) subBtn.classList.add('hidden');
+
+      if (typeof Html5Qrcode === 'undefined') {
+        showToast('QR 스캐너 라이브러리를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.', 'warning');
+        if (startBtn) startBtn.classList.remove('hidden');
+        if (stopBtn)  stopBtn.classList.add('hidden');
+        return;
       }
 
-      document.getElementById('startScanBtn').classList.add('hidden');
-      document.getElementById('stopScanBtn').classList.remove('hidden');
-      document.getElementById('qrSuccessBadge').classList.add('hidden');
-
       state.qrScanner = new Html5Qrcode('qr-reader');
-
       state.qrScanner.start(
         { facingMode: 'environment' },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 }
-        },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
         onQRCodeSuccess,
-        onQRCodeError
-      ).catch(err => {
-        console.error('QR 스캐너 시작 실패:', err);
+        () => {}
+      ).catch(() => {
         showToast('카메라를 사용할 수 없습니다. 권한을 확인해 주세요.', 'error');
-        document.getElementById('startScanBtn').classList.remove('hidden');
-        document.getElementById('stopScanBtn').classList.add('hidden');
+        if (startBtn) startBtn.classList.remove('hidden');
+        if (stopBtn)  stopBtn.classList.add('hidden');
       });
     }
 
     function stopQRScanner() {
       if (state.qrScanner) {
-        state.qrScanner.stop().then(() => {
-          state.qrScanner.clear();
-          state.qrScanner = null;
-        }).catch(console.error);
+        state.qrScanner.stop()
+          .then(() => { state.qrScanner.clear(); state.qrScanner = null; })
+          .catch(() => { state.qrScanner = null; });
       }
-
-      document.getElementById('startScanBtn').classList.remove('hidden');
-      document.getElementById('stopScanBtn').classList.add('hidden');
+      const startBtn = document.getElementById('startScanBtn');
+      const stopBtn  = document.getElementById('stopScanBtn');
+      if (startBtn) startBtn.classList.remove('hidden');
+      if (stopBtn)  stopBtn.classList.add('hidden');
     }
 
     function onQRCodeSuccess(decodedText) {
-      console.log('QR 코드 인식:', decodedText);
-
-      // URL 기반 QR (출석 페이지 URL)
-      if (decodedText.startsWith('http')) {
-        stopQRScanner();
-
-        if (decodedText.includes('index.html') || decodedText.includes(window.location.hostname)) {
-          if (state.locationMode === 'indoor') {
-            // 실내 모드: QR 인증 완료 처리
-            handleIndoorQrVerified();
-          } else {
-            showToast('출석 페이지에 이미 접속 중입니다. 정보를 입력하고 출석하세요.', 'info');
-          }
-        } else {
-          window.location.href = decodedText;
-        }
-        return;
-      }
-
-      // QR 토큰 검증 (레거시)
-      if (decodedText.startsWith(CONFIG.QR_TOKEN_PREFIX)) {
-        stopQRScanner();
+      stopQRScanner();
+      const isValidUrl = decodedText.startsWith('http') && (
+        decodedText.includes('index.html') ||
+        decodedText.includes('script.google.com') ||
+        decodedText.includes(window.location.hostname)
+      );
+      if (isValidUrl || decodedText.startsWith(CONFIG.QR_TOKEN_PREFIX)) {
+        state.isQrVerified = true;
         state.qrToken = decodedText;
-
-        if (state.locationMode === 'indoor') {
-          handleIndoorQrVerified();
-        } else {
-          showToast('QR 코드가 인식되었습니다!', 'success');
-        }
+        showQrSuccess();
       } else {
         showToast('유효하지 않은 QR 코드입니다.', 'error');
+        const startBtn = document.getElementById('startScanBtn');
+        if (startBtn) startBtn.classList.remove('hidden');
       }
     }
 
-    function showInvalidQrScreen() {
-      // 실내 모드 전체 숨김 (QR 스캐너 + 폼)
-      document.getElementById('indoorSection').classList.add('hidden');
-      document.getElementById('outdoorSection').classList.add('hidden');
-      document.getElementById('modeBadge').classList.add('hidden');
-
-      // 차단 안내 화면 표시
-      const indoorSection = document.getElementById('indoorSection');
-      const invalidQrDiv = document.createElement('div');
-      invalidQrDiv.className = 'text-center py-12';
-      invalidQrDiv.innerHTML = `
-        <div class="mb-6">
-          <div class="w-20 h-20 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
-            <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-            </svg>
-          </div>
-          <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">유효하지 않은 QR 코드</h3>
-          <p class="text-gray-500 dark:text-gray-400 mb-6">이전 회의의 QR 코드이거나 만료된 QR 코드입니다.<br>관리자에게 현재 회의 QR 코드를 요청해 주세요.</p>
-        </div>
-      `;
-      indoorSection.parentNode.insertBefore(invalidQrDiv, indoorSection.nextSibling);
-
-      updateStatus('유효하지 않은 QR 코드입니다.', 'error');
+    function showQrSuccess() {
+      const badge  = document.getElementById('qrSuccessBadge');
+      const info   = document.getElementById('qrSessionInfo');
+      const subBtn = document.getElementById('btn-qr-submit');
+      if (badge)  badge.classList.remove('hidden');
+      if (info)   info.textContent = 'QR 인증이 완료되었습니다';
+      if (subBtn) subBtn.classList.remove('hidden');
+      showToast('QR 코드 인증 완료!', 'success');
     }
 
-    function handleIndoorQrVerified() {
-      state.isQrVerified = true;
-
-      // QR 성공 배지 표시
-      document.getElementById('qrSuccessBadge').classList.remove('hidden');
-      document.getElementById('qrSessionInfo').textContent = '출석 인증이 완료되었습니다';
-
-      // QR 스캐너 영역 전체 숨김 (안내 문구 + 스캐너 + 버튼)
-      document.getElementById('indoorQrArea').classList.add('hidden');
-
-      updateStatus('QR 인증 완료! 정보를 입력하고 출석하세요.', 'ready');
-      showToast('QR 코드 인증 완료! 아래 정보를 입력해 주세요.', 'success');
-
-      // 폼 활성화 검증
-      validateIndoorForm();
-    }
-
-    function onQRCodeError(error) {
-      // 스캔 중 오류는 무시 (계속 스캔 시도)
-    }
-
-    // ========================================
-    // 폼 검증
-    // ========================================
-
-    function validateField(fieldName) {
-      const el = document.getElementById(fieldName);
-      const validationEl = document.getElementById(`${fieldName}-validation`);
-      if (!el) return true;
-
-      const value = el.value.trim();
-      let isValid = true;
-      let message = '';
-
-      if (fieldName === 'email') {
-        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-          isValid = false;
-          message = '올바른 이메일 형식을 입력해 주세요';
-        }
-      } else {
-        if (!value) {
-          isValid = false;
-          message = '필수 항목입니다';
-        } else if (value.length < 2) {
-          isValid = false;
-          message = '2자 이상 입력해 주세요';
-        }
-      }
-
-      if (validationEl) {
-        if (isValid) {
-          el.classList.remove('border-red-500');
-          validationEl.classList.add('hidden');
-        } else {
-          el.classList.add('border-red-500');
-          validationEl.textContent = message;
-          validationEl.classList.remove('hidden');
-        }
-      }
-
-      return isValid;
-    }
-
-    function validateForm() {
-      if (state.isCompleted) return;
-
-      const nameValid = validateField('name');
-      const deptValid = validateField('department');
-      const isFormValid = nameValid && deptValid && state.isLocationValid && state.isSystemReady;
-
-      updateSubmitButton(isFormValid);
-    }
-
-    function updateSubmitButton(isValid) {
-      const btn = document.getElementById('submitBtn');
-      const textEl = document.getElementById('submitBtnText');
-
-      if (state.isCompleted) {
-        btn.disabled = true;
-        textEl.textContent = '출석 완료됨';
-      } else if (state.isSubmitting) {
-        btn.disabled = true;
-        textEl.textContent = '처리중...';
-      } else if (!state.isSystemReady) {
-        btn.disabled = true;
-        textEl.textContent = '시스템 준비중...';
-      } else if (!state.isLocationValid) {
-        btn.disabled = true;
-        textEl.textContent = '위치 확인 후 출석 체크';
-      } else if (isValid) {
-        btn.disabled = false;
-        textEl.textContent = '출석 체크하기';
-      } else {
-        btn.disabled = true;
-        textEl.textContent = '정보를 입력해 주세요';
-      }
-    }
-
-    // ========================================
-    // 폼 제출
-    // ========================================
-
-    function handleFormSubmit(e) {
-      e.preventDefault();
-
-      if (state.isSubmitting || state.isCompleted || !state.isSystemReady || !state.isLocationValid) {
-        return;
-      }
-
-      const formData = {
-        name: document.getElementById('name').value.trim(),
-        department: document.getElementById('department').value.trim(),
-        email: document.getElementById('email').value.trim()
-      };
-
-      submitAttendance(formData);
-    }
-
-    function handleIndoorFormSubmit(e) {
-      e.preventDefault();
-
+    // =====================================================================
+    // 출석 제출
+    // =====================================================================
+    function doSubmit() {
       if (state.isSubmitting || state.isCompleted) return;
 
-      if (!state.isQrVerified) {
-        showToast('QR 코드를 먼저 스캔해 주세요.', 'warning');
-        return;
-      }
-
-      const formData = {
-        name: document.getElementById('indoorName').value.trim(),
-        department: document.getElementById('indoorDepartment').value.trim(),
-        email: document.getElementById('indoorEmail').value.trim(),
-        qrVerified: true
-      };
-
-      if (!formData.name || !formData.department) {
-        showToast('성명과 소속을 입력해 주세요.', 'warning');
-        return;
-      }
-
-      submitAttendance(formData);
-    }
-
-    function validateIndoorForm() {
-      if (state.isCompleted) return;
-
-      const name = document.getElementById('indoorName').value.trim();
-      const dept = document.getElementById('indoorDepartment').value.trim();
-      const isFormValid = name.length >= 2 && dept.length >= 2 && state.isQrVerified;
-
-      const btn = document.getElementById('indoorSubmitBtn');
-      const textEl = document.getElementById('indoorSubmitBtnText');
-
-      if (state.isCompleted) {
-        btn.disabled = true;
-        textEl.textContent = '출석 완료됨';
-      } else if (!state.isQrVerified) {
-        btn.disabled = true;
-        textEl.textContent = 'QR 스캔 후 출석 체크';
-      } else if (isFormValid) {
-        btn.disabled = false;
-        textEl.textContent = '출석 체크하기';
-      } else {
-        btn.disabled = true;
-        textEl.textContent = '정보를 입력해 주세요';
-      }
-    }
-
-    function submitAttendance(formData) {
-      // 중복 출석 방지 체크
       if (state.currentEventId && hasAlreadyAttended(state.currentEventId)) {
-        showToast('이 기기에서 이미 출석이 완료되었습니다.', 'error');
-        showAlreadyAttendedMessage();
+        showDoneFromStorage(state.currentEventId);
         return;
       }
+
+      const name  = document.getElementById('inputName').value.trim();
+      const dept  = document.getElementById('inputDept').value.trim();
+      const email = state.emailEnabled
+        ? (document.getElementById('inputEmail').value.trim())
+        : '';
 
       state.isSubmitting = true;
-      if (state.locationMode === 'outdoor') updateSubmitButton(false);
       showLoading(true, '출석 정보를 전송하고 있습니다...');
 
-      if (state.lastKnownPosition) {
-        processSubmission(formData, state.lastKnownPosition);
-      } else if (state.locationMode === 'indoor') {
-        // 실내 모드: GPS 없이도 제출 가능
-        processSubmission(formData, null);
-      } else {
-        navigator.geolocation.getCurrentPosition(
-          position => processSubmission(formData, position),
-          error => {
+      const buildAndSend = (position) => {
+        const data = {
+          name,
+          department: dept,
+          email,
+          latitude:   position ? position.coords.latitude  : 0,
+          longitude:  position ? position.coords.longitude : 0,
+          accuracy:   position ? position.coords.accuracy  : -1,
+          timestamp:  new Date().toISOString(),
+          deviceId:   state.deviceId,
+          locationMode: state.locationMode,
+          qrToken:    state.qrToken || '',
+          qrVerified: state.isQrVerified,
+          ...(state.deviceInfo || {})
+        };
+
+        callGoogleScript('saveAttendance', data)
+          .then(result => {
             state.isSubmitting = false;
             showLoading(false);
-            showToast('위치 확인에 실패했습니다. 다시 시도해 주세요.', 'error');
-            updateSubmitButton(true);
-          }
-        );
-      }
-    }
-
-    function processSubmission(formData, position) {
-      const attendanceData = {
-        ...formData,
-        latitude: position ? position.coords.latitude : 0,
-        longitude: position ? position.coords.longitude : 0,
-        accuracy: position ? position.coords.accuracy : -1,
-        timestamp: new Date().toISOString(),
-        deviceId: state.deviceId,
-        locationMode: state.locationMode,
-        ...state.deviceInfo
-      };
-
-      showLoading(true, '서버에 저장하고 있습니다...');
-
-      callGoogleScript('saveAttendance', attendanceData)
-        .then(result => {
-          state.isSubmitting = false;
-          showLoading(false);
-
-          if (result && result.success) {
-            completeAttendance(result);
-          } else {
-            const message = result?.error || result?.message || '출석 체크에 실패했습니다.';
-            showToast(message, 'error');
-
-            if (state.locationMode === 'outdoor' && (message.includes('위치') || message.includes('회의실'))) {
-              state.isLocationValid = false;
-              updateStatus('위치를 다시 확인해 주세요', 'checking');
-            }
-
-            if (state.locationMode === 'indoor') {
-              validateIndoorForm();
+            if (result && result.success) {
+              completeAttendance(result, name, dept);
             } else {
-              updateSubmitButton(true);
+              const msg = (result && result.error) || '출석 체크에 실패했습니다.';
+              showToast(msg, 'error');
+              if (state.locationMode === 'outdoor') setGpsStatus('❌ ' + msg, 'error');
             }
-          }
-        })
-        .catch(error => {
-          state.isSubmitting = false;
-          showLoading(false);
-          showToast('출석 체크 중 오류가 발생했습니다. 다시 시도해 주세요.', 'error');
-          if (state.locationMode === 'indoor') {
-            validateIndoorForm();
-          } else {
-            updateSubmitButton(true);
-          }
-        });
+          })
+          .catch(() => {
+            state.isSubmitting = false;
+            showLoading(false);
+            showToast('서버 연결에 실패했습니다. 다시 시도해 주세요.', 'error');
+          });
+      };
+
+      if (state.locationMode === 'outdoor') {
+        if (state.lastKnownPosition) {
+          buildAndSend(state.lastKnownPosition);
+        } else {
+          navigator.geolocation.getCurrentPosition(
+            pos => { state.lastKnownPosition = pos; buildAndSend(pos); },
+            ()  => {
+              state.isSubmitting = false;
+              showLoading(false);
+              showToast('위치 확인에 실패했습니다.', 'error');
+            },
+            { enableHighAccuracy: true, timeout: 15000 }
+          );
+        }
+      } else {
+        // 실내(QR) 모드: GPS 불필요
+        buildAndSend(null);
+      }
     }
 
-    function completeAttendance(result) {
+    function completeAttendance(result, name, dept) {
       state.isCompleted = true;
+      const now          = new Date();
+      const methodText   = state.locationMode === 'indoor' ? 'QR 코드' : 'GPS 위치';
+      const meetingEl    = document.getElementById('meetingTitle');
+      const meetingTitle = meetingEl ? meetingEl.textContent : '교직원 회의';
+      const confirmNum   = generateConfirmationNumber(now);
 
-      const nameValue = document.getElementById('name')?.value || document.getElementById('indoorName')?.value || '';
-      const deptValue = document.getElementById('department')?.value || document.getElementById('indoorDepartment')?.value || '';
-      const now = new Date();
-      const methodText = state.locationMode === 'indoor' ? 'QR 코드' : 'GPS 위치';
-      const meetingTitle = document.getElementById('meetingTitle')?.textContent || '교직원 회의';
-
-      // 출석 기록 저장 (대리 출석 방지용 + 확인증 정보)
-      const attendInfo = {
-        name: nameValue,
-        dept: deptValue,
-        time: now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-        method: methodText,
-        meeting: meetingTitle,
-        confirmNumber: generateConfirmationNumber(now)
+      const info = {
+        name, dept,
+        time:          now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+        method:        methodText,
+        meeting:       meetingTitle,
+        confirmNumber: confirmNum
       };
-      if (state.currentEventId) {
-        markAsAttended(state.currentEventId, attendInfo);
-      }
-      if (result.eventId) {
-        state.currentEventId = result.eventId;
-        markAsAttended(result.eventId, attendInfo);
-      }
 
-      // 확인증 카드 채우기
-      document.getElementById('certName').textContent = nameValue;
-      document.getElementById('certDept').textContent = deptValue;
-      document.getElementById('certTime').textContent = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-      document.getElementById('certMethod').textContent = methodText;
-      document.getElementById('certMeeting').textContent = meetingTitle;
-      document.getElementById('certConfirmNumber').textContent = generateConfirmationNumber(now);
+      if (state.currentEventId) markAsAttended(state.currentEventId, info);
+      if (result.eventId && result.eventId !== state.currentEventId) markAsAttended(result.eventId, info);
 
-      document.getElementById('completionMessage').classList.remove('hidden');
+      fillCertificate(info);
+      goToScreen('screen-done');
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    }
 
-      // 폼 및 모드 배지 숨기기
-      document.getElementById('outdoorSection').classList.add('hidden');
-      document.getElementById('indoorSection').classList.add('hidden');
-      document.getElementById('modeBadge').classList.add('hidden');
-
-      updateSubmitButton(false);
-      updateStatus('출석이 완료되었습니다!', 'ready');
-
-      // 진동 피드백
-      if (navigator.vibrate) {
-        navigator.vibrate([200, 100, 200]);
-      }
-
-      // 완료 메시지로 스크롤
-      document.getElementById('completionMessage').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    function fillCertificate(info) {
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      set('certName',          info.name);
+      set('certDept',          info.dept);
+      set('certTime',          info.time);
+      set('certMethod',        info.method);
+      set('certMeeting',       info.meeting);
+      set('certConfirmNumber', info.confirmNumber);
     }
 
     function generateConfirmationNumber(date) {
       const yy = String(date.getFullYear()).slice(-2);
       const mm = String(date.getMonth() + 1).padStart(2, '0');
       const dd = String(date.getDate()).padStart(2, '0');
-      const rand = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-      return `${yy}${mm}${dd}-${rand}`;
+      return yy + mm + dd + '-' + String(Math.floor(Math.random() * 10000)).padStart(4, '0');
     }
 
-    function captureAttendanceCertificate() {
-      const card = document.getElementById('certificateCard');
-      if (!card) return;
-
-      if (typeof html2canvas === 'undefined') {
-        showToast('이미지 저장 기능을 불러올 수 없습니다.', 'error');
-        return;
-      }
-
-      html2canvas(card, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff'
-      }).then(canvas => {
-        try {
-          const link = document.createElement('a');
-          link.download = '출석확인증_' + new Date().toISOString().slice(0, 10) + '.png';
-          link.href = canvas.toDataURL('image/png');
-          link.click();
-          showToast('확인증이 저장되었습니다.', 'success');
-        } catch (err) {
-          // 다운로드 실패 시 새 창 폴백
-          const dataUrl = canvas.toDataURL('image/png');
-          const newWindow = window.open();
-          if (newWindow) {
-            newWindow.document.write('<img src="' + dataUrl + '" style="max-width:100%">');
-            newWindow.document.title = '출석 확인증';
-            showToast('새 창에서 이미지를 저장해 주세요.', 'info');
-          } else {
-            showToast('팝업이 차단되었습니다. 팝업을 허용해 주세요.', 'error');
-          }
-        }
-      }).catch(() => {
-        showToast('확인증 저장에 실패했습니다.', 'error');
-      });
-    }
-
-    // ========================================
-    // 대리 출석 방지
-    // ========================================
-
-    function checkAlreadyAttended() {
-      if (!state.currentEventId) return;
-
-      // 이미 출석한 기기라면 항상 완료 화면 표시 (대리 출석 방지)
-      if (hasAlreadyAttended(state.currentEventId)) {
-        state.isCompleted = true;
-        showAlreadyAttendedMessage();
-      }
-    }
-
+    // =====================================================================
+    // 이미 출석 완료 처리
+    // =====================================================================
     function hasAlreadyAttended(eventId) {
       return localStorage.getItem('yiu_attended_' + eventId) === 'true';
     }
 
     function markAsAttended(eventId, info) {
-      if (eventId) {
-        localStorage.setItem('yiu_attended_' + eventId, 'true');
-        if (info) {
-          localStorage.setItem('yiu_attended_info_' + eventId, JSON.stringify(info));
+      if (!eventId) return;
+      localStorage.setItem('yiu_attended_' + eventId, 'true');
+      if (info) localStorage.setItem('yiu_attended_info_' + eventId, JSON.stringify(info));
+    }
+
+    function showDoneFromStorage(eventId) {
+      state.isCompleted = true;
+      try {
+        const saved = localStorage.getItem('yiu_attended_info_' + eventId);
+        if (saved) {
+          fillCertificate(JSON.parse(saved));
+        } else {
+          const meetingEl = document.getElementById('meetingTitle');
+          fillCertificate({
+            name: '-', dept: '-', time: '-', method: '-',
+            meeting: meetingEl ? meetingEl.textContent : '교직원 회의',
+            confirmNumber: '이미 출석 완료'
+          });
         }
-      }
+      } catch (e) {}
+      goToScreen('screen-done');
     }
 
-    function showAlreadyAttendedMessage() {
-      const meetingTitle = document.getElementById('meetingTitle')?.textContent || '교직원 회의';
-
-      // 저장된 출석 정보 불러오기
-      let info = null;
-      if (state.currentEventId) {
-        try {
-          const saved = localStorage.getItem('yiu_attended_info_' + state.currentEventId);
-          if (saved) info = JSON.parse(saved);
-        } catch (e) {}
+    // =====================================================================
+    // 확인증 저장
+    // =====================================================================
+    function captureAttendanceCertificate() {
+      const card = document.getElementById('certificateCard');
+      if (!card) return;
+      showToast('확인증을 저장하고 있습니다...', 'info');
+      if (typeof html2canvas === 'undefined') {
+        showToast('저장 기능을 사용할 수 없습니다.', 'error');
+        return;
       }
+      html2canvas(card, { scale: 2, useCORS: true, backgroundColor: '#ffffff' })
+        .then(canvas => {
+          const link = document.createElement('a');
+          const now  = new Date();
+          link.download = '출석확인증_' + now.toLocaleDateString('ko-KR').replace(/[. ]/g, '').replace(/.$/, '') + '.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+          showToast('확인증이 저장되었습니다!', 'success');
+        })
+        .catch(() => showToast('확인증 저장에 실패했습니다.', 'error'));
+    }
 
-      if (info) {
-        document.getElementById('certName').textContent = info.name;
-        document.getElementById('certDept').textContent = info.dept;
-        document.getElementById('certTime').textContent = info.time;
-        document.getElementById('certMethod').textContent = info.method;
-        document.getElementById('certMeeting').textContent = info.meeting || meetingTitle;
-        document.getElementById('certConfirmNumber').textContent = info.confirmNumber || '출석 완료';
+    // =====================================================================
+    // 내 출석 확인 (아코디언)
+    // =====================================================================
+    function toggleAttendanceCheck() {
+      const content = document.getElementById('attendanceCheckContent');
+      const arrow   = document.getElementById('attendanceCheckArrow');
+      if (!content) return;
+      const expanded = content.classList.toggle('expanded');
+      if (arrow) arrow.style.transform = expanded ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+
+    function checkMyAttendance() {
+      const name = document.getElementById('checkName').value.trim();
+      const dept = document.getElementById('checkDept').value.trim();
+      if (name.length < 2) { showToast('성명을 2자 이상 입력해 주세요.', 'warning'); return; }
+      if (dept.length < 2) { showToast('소속을 2자 이상 입력해 주세요.', 'warning'); return; }
+
+      const btn = document.getElementById('checkAttendanceBtn');
+      if (btn) { btn.disabled = true; btn.textContent = '조회 중...'; }
+
+      callGoogleScript('checkAttendance', { name, department: dept })
+        .then(result => {
+          if (btn) { btn.disabled = false; btn.textContent = '출석 조회'; }
+          displayAttendanceCheckResult(result);
+        })
+        .catch(() => {
+          if (btn) { btn.disabled = false; btn.textContent = '출석 조회'; }
+          displayAttendanceCheckResult({ success: false, error: '서버 연결에 실패했습니다.' });
+        });
+    }
+
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = String(str);
+      return d.innerHTML;
+    }
+
+    function displayAttendanceCheckResult(result) {
+      const c = document.getElementById('attendanceCheckResult');
+      if (!c) return;
+      if (result && result.success && result.found) {
+        const r = result.record;
+        c.innerHTML =
+          '<div class="p-4 rounded-xl bg-green-50 dark:bg-green-900/30 border-2 border-green-200 dark:border-green-800 mt-2">' +
+            '<p class="font-bold text-green-800 dark:text-green-300 mb-2">✅ 출석이 확인되었습니다</p>' +
+            '<div class="grid grid-cols-2 gap-2 text-sm">' +
+              '<div class="p-2 bg-white dark:bg-slate-700 rounded-lg"><div class="text-xs text-gray-400">성명</div><div class="font-semibold">' + escapeHtml(r.name) + '</div></div>' +
+              '<div class="p-2 bg-white dark:bg-slate-700 rounded-lg"><div class="text-xs text-gray-400">소속</div><div class="font-semibold">' + escapeHtml(r.department) + '</div></div>' +
+              '<div class="p-2 bg-white dark:bg-slate-700 rounded-lg"><div class="text-xs text-gray-400">출석 시간</div><div class="font-semibold">' + escapeHtml(r.time) + '</div></div>' +
+              '<div class="p-2 bg-white dark:bg-slate-700 rounded-lg"><div class="text-xs text-gray-400">회의명</div><div class="font-semibold">' + escapeHtml(r.meetingTitle || '-') + '</div></div>' +
+            '</div>' +
+          '</div>';
+      } else if (result && result.success && !result.found) {
+        c.innerHTML =
+          '<div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/30 border-2 border-amber-200 mt-2">' +
+            '<p class="font-bold text-amber-800 dark:text-amber-300">⚠️ 출석 기록을 찾을 수 없습니다</p>' +
+            '<p class="text-sm mt-1 text-amber-600">이름과 소속이 정확한지 확인해 주세요.</p>' +
+          '</div>';
       } else {
-        document.getElementById('certName').textContent = '-';
-        document.getElementById('certDept').textContent = '-';
-        document.getElementById('certTime').textContent = '-';
-        document.getElementById('certMethod').textContent = '-';
-        document.getElementById('certMeeting').textContent = meetingTitle;
-        document.getElementById('certConfirmNumber').textContent = '이미 출석 완료';
+        c.innerHTML =
+          '<div class="p-4 rounded-xl bg-red-50 dark:bg-red-900/30 border-2 border-red-200 mt-2">' +
+            '<p class="font-bold text-red-700 dark:text-red-400">❌ 조회 실패</p>' +
+            '<p class="text-sm mt-1">' + escapeHtml((result && result.error) || '오류가 발생했습니다.') + '</p>' +
+          '</div>';
       }
-
-      document.getElementById('completionMessage').classList.remove('hidden');
-      document.getElementById('outdoorSection').classList.add('hidden');
-      document.getElementById('indoorSection').classList.add('hidden');
-      document.getElementById('modeBadge').classList.add('hidden');
-      updateSubmitButton(false);
-      updateStatus('이미 출석이 완료되었습니다', 'ready');
     }
 
-    // ========================================
-    // Google Apps Script 통신 (fetch + JSONP 폴백)
-    // ========================================
-
+    // =====================================================================
+    // Google Apps Script 통신 (JSONP + fetch 폴백)
+    // =====================================================================
     function callGoogleScript(method, params) {
-      let url = `${CONFIG.BACKEND_URL}?method=${encodeURIComponent(method)}`;
-      if (params) {
-        url += `&params=${encodeURIComponent(JSON.stringify(params))}`;
-      }
-
-      // fetch 방식 시도 → 실패 시 JSONP 폴백
+      let url = CONFIG.BACKEND_URL + '?method=' + encodeURIComponent(method);
+      if (params) url += '&params=' + encodeURIComponent(JSON.stringify(params));
       return callViaJsonp(url).catch(() => callViaFetch(url));
     }
 
     function callViaFetch(baseUrl) {
       const url = baseUrl + '&callback=_cb';
       return fetch(url, { redirect: 'follow' })
-        .then(res => {
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return res.text();
-        })
-        .then(text => {
-          const json = text.replace(/^_cb\(/, '').replace(/\);?\s*$/, '');
-          return JSON.parse(json);
-        });
+        .then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.text(); })
+        .then(text => JSON.parse(text.replace(/^_cb\(/, '').replace(/\);\s*$/, '')));
     }
 
     function callViaJsonp(baseUrl) {
       return new Promise((resolve, reject) => {
-        const callbackName = `gasCallback_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
-        const timeoutId = setTimeout(() => {
-          cleanup();
-          reject(new Error('요청 시간 초과'));
-        }, CONFIG.REQUEST_TIMEOUT);
-
+        const cbName = 'gasCallback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const tid = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, CONFIG.REQUEST_TIMEOUT);
         function cleanup() {
-          clearTimeout(timeoutId);
-          delete window[callbackName];
-          const script = document.getElementById(callbackName);
-          if (script) script.remove();
+          clearTimeout(tid);
+          delete window[cbName];
+          const s = document.getElementById(cbName);
+          if (s) s.remove();
         }
-
-        window[callbackName] = result => {
-          cleanup();
-          resolve(result);
-        };
-
+        window[cbName] = result => { cleanup(); resolve(result); };
         const script = document.createElement('script');
-        script.id = callbackName;
-        script.onerror = () => {
-          cleanup();
-          reject(new Error('네트워크 오류'));
-        };
-
-        script.src = baseUrl + `&callback=${callbackName}`;
+        script.id = cbName;
+        script.onerror = () => { cleanup(); reject(new Error('network')); };
+        script.src = baseUrl + '&callback=' + cbName;
         document.head.appendChild(script);
       });
     }
 
-    // ========================================
+    // =====================================================================
     // UI 헬퍼
-    // ========================================
-
-    function updateStatus(message, type) {
-      const indicator = document.getElementById('statusIndicator');
-      if (!indicator) return;
-
-      const colors = {
-        ready: 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-700 dark:text-green-400',
-        checking: 'bg-amber-100 dark:bg-amber-900/30 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400',
-        error: 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-700 dark:text-red-400'
-      };
-
-      const icons = {
-        ready: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>`,
-        checking: `<div class="spinner w-5 h-5"></div>`,
-        error: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>`
-      };
-
-      indicator.className = `mb-6 p-4 rounded-2xl border-2 transition-all duration-300 ${colors[type]}`;
-      indicator.innerHTML = `
-        <div class="flex items-center justify-center gap-3">
-          ${icons[type]}
-          <span class="font-medium">${message}</span>
-        </div>
-      `;
-    }
-
-    function showToast(message, type = 'info') {
+    // =====================================================================
+    function showToast(message, type) {
+      type = type || 'info';
       const container = document.getElementById('alertContainer');
       if (!container) return;
-
       const colors = {
         success: 'bg-green-50 dark:bg-green-900/50 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300',
-        error: 'bg-red-50 dark:bg-red-900/50 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300',
+        error:   'bg-red-50 dark:bg-red-900/50 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300',
         warning: 'bg-amber-50 dark:bg-amber-900/50 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300',
-        info: 'bg-blue-50 dark:bg-blue-900/50 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300'
+        info:    'bg-blue-50 dark:bg-blue-900/50 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300'
       };
-
       const toast = document.createElement('div');
-      toast.className = `toast-enter p-4 rounded-xl border-2 mb-3 ${colors[type]}`;
-      toast.innerHTML = `
-        <div class="flex items-start gap-3">
-          <div class="flex-1 text-sm font-medium">${message}</div>
-          <button onclick="this.parentElement.parentElement.remove()" class="flex-shrink-0 opacity-60 hover:opacity-100">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-      `;
-
+      toast.className = 'p-4 rounded-xl border-2 mb-3 ' + (colors[type] || colors.info);
+      toast.style.animation = 'stepIn 0.3s ease-out';
+      toast.innerHTML =
+        '<div class="flex items-start gap-3">' +
+          '<div class="flex-1 text-sm font-medium">' + message + '</div>' +
+          '<button onclick="this.parentElement.parentElement.remove()" ' +
+                  'class="flex-shrink-0 opacity-60 hover:opacity-100 text-lg leading-none">&times;</button>' +
+        '</div>';
       container.appendChild(toast);
-
+      const delay = type === 'success' ? 5000 : 8000;
       setTimeout(() => {
-        toast.classList.add('toast-exit');
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s';
         setTimeout(() => toast.remove(), 300);
-      }, type === 'success' ? 5000 : 8000);
+      }, delay);
     }
 
-    function showLoading(show, text = '처리중입니다...') {
+    function showLoading(show, text) {
       const overlay = document.getElementById('loadingOverlay');
-      const loadingText = document.getElementById('loadingText');
-
+      if (!overlay) return;
       if (show) {
-        loadingText.textContent = text;
+        const textEl = document.getElementById('loadingText');
+        if (textEl) textEl.textContent = text || '처리중입니다...';
         overlay.classList.remove('hidden');
       } else {
         overlay.classList.add('hidden');
       }
     }
 
-    // ========================================
-    // 내 출석 확인
-    // ========================================
+    function updateStatus() {} // 하위 호환 noop
 
-    function toggleAttendanceCheck() {
-      const content = document.getElementById('attendanceCheckContent');
-      const arrow = document.getElementById('attendanceCheckArrow');
-
-      if (content.classList.contains('expanded')) {
-        content.classList.remove('expanded');
-        arrow.style.transform = 'rotate(0deg)';
-      } else {
-        content.classList.add('expanded');
-        arrow.style.transform = 'rotate(180deg)';
-      }
-    }
-
-    function checkMyAttendance() {
-      const name = document.getElementById('checkName').value.trim();
-      const department = document.getElementById('checkDept').value.trim();
-
-      if (!name || name.length < 2) {
-        showToast('성명을 2자 이상 입력해 주세요.', 'warning');
-        return;
-      }
-      if (!department || department.length < 2) {
-        showToast('소속을 2자 이상 입력해 주세요.', 'warning');
-        return;
-      }
-
-      const btn = document.getElementById('checkAttendanceBtn');
-      btn.disabled = true;
-      btn.textContent = '조회 중...';
-
-      callGoogleScript('checkAttendance', { name, department })
-        .then(result => {
-          btn.disabled = false;
-          btn.textContent = '출석 조회';
-          displayAttendanceCheckResult(result);
-        })
-        .catch(error => {
-          btn.disabled = false;
-          btn.textContent = '출석 조회';
-          displayAttendanceCheckResult({ success: false, error: '서버 연결에 실패했습니다.' });
-        });
-    }
-
-    function escapeHtml(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
-
-    function displayAttendanceCheckResult(result) {
-      const container = document.getElementById('attendanceCheckResult');
-
-      if (result && result.success && result.found) {
-        const record = result.record;
-        container.innerHTML = `
-          <div class="attendance-check-result p-4 rounded-xl bg-green-50 dark:bg-green-900/30 border-2 border-green-200 dark:border-green-800">
-            <div class="flex items-center gap-2 mb-3">
-              <div class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-              </div>
-              <span class="font-bold text-green-800 dark:text-green-400 text-sm">출석이 확인되었습니다</span>
-            </div>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-              <div class="p-2 bg-white dark:bg-slate-700 rounded-lg">
-                <div class="text-gray-500 dark:text-gray-400">성명</div>
-                <div class="font-semibold text-gray-900 dark:text-white">${escapeHtml(record.name)}</div>
-              </div>
-              <div class="p-2 bg-white dark:bg-slate-700 rounded-lg">
-                <div class="text-gray-500 dark:text-gray-400">소속</div>
-                <div class="font-semibold text-gray-900 dark:text-white">${escapeHtml(record.department)}</div>
-              </div>
-              <div class="p-2 bg-white dark:bg-slate-700 rounded-lg">
-                <div class="text-gray-500 dark:text-gray-400">출석 시간</div>
-                <div class="font-semibold text-gray-900 dark:text-white">${escapeHtml(record.time)}</div>
-              </div>
-              <div class="p-2 bg-white dark:bg-slate-700 rounded-lg">
-                <div class="text-gray-500 dark:text-gray-400">회의명</div>
-                <div class="font-semibold text-gray-900 dark:text-white">${escapeHtml(record.meetingTitle || '-')}</div>
-              </div>
-            </div>
-          </div>
-        `;
-      } else if (result && result.success && !result.found) {
-        container.innerHTML = `
-          <div class="attendance-check-result p-4 rounded-xl bg-amber-50 dark:bg-amber-900/30 border-2 border-amber-200 dark:border-amber-800">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>
-              </div>
-              <div>
-                <p class="font-bold text-amber-800 dark:text-amber-400 text-sm">출석 기록을 찾을 수 없습니다</p>
-                <p class="text-xs text-amber-600 dark:text-amber-500 mt-1">이름과 소속이 정확한지 확인해 주세요</p>
-              </div>
-            </div>
-          </div>
-        `;
-      } else {
-        const errorMsg = (result && result.error) ? result.error : '조회 중 오류가 발생했습니다.';
-        container.innerHTML = `
-          <div class="attendance-check-result p-4 rounded-xl bg-red-50 dark:bg-red-900/30 border-2 border-red-200 dark:border-red-800">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-              </div>
-              <div>
-                <p class="font-bold text-red-800 dark:text-red-400 text-sm">조회 실패</p>
-                <p class="text-xs text-red-600 dark:text-red-500 mt-1">${escapeHtml(errorMsg)}</p>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-    }
-
-    console.log('용인대학교 교직원 출석 시스템 로드 완료 (현대적 UI, QR + GPS 이중 인증)');
+    console.log('용인대학교 교직원 출석 시스템 로드 완료 v2.2.0');
   </script>
 </body>
 </html>

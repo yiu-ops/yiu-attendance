@@ -306,6 +306,18 @@
             </label>
           </div>
 
+          <!-- 이메일 발송 활성화 토글 -->
+          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800/50 rounded-xl">
+            <div>
+              <p class="font-medium text-gray-900 dark:text-white">이메일 발송 기능</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">OFF 시 이용자 화면에서 이메일 입력란이 사라집니다</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0 ml-4">
+              <input type="checkbox" id="emailEnabled" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+            </label>
+          </div>
+
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">새 비밀번호</label>
             <input type="password" id="newAdminPassword" placeholder="새 비밀번호 (6자 이상)"
@@ -1111,6 +1123,11 @@
         preventProxyEl.checked = settings.prevent_proxy_attendance === true || settings.prevent_proxy_attendance === 'true';
       }
 
+      const emailEnabledEl = document.getElementById('emailEnabled');
+      if (emailEnabledEl) {
+        emailEnabledEl.checked = settings.email_enabled !== 'false';
+      }
+
       // 출석 모드 반영
       const locationMode = settings.location_mode || 'outdoor';
       const modeRadio = document.getElementById(locationMode === 'indoor' ? 'modeIndoor' : 'modeOutdoor');
@@ -1232,6 +1249,7 @@
         ...state.settings,
         notification_email: document.getElementById('notificationEmail').value,
         prevent_proxy_attendance: document.getElementById('preventProxyAttendance').checked,
+        email_enabled: document.getElementById('emailEnabled').checked ? 'true' : 'false',
         location_mode: locationMode
       };
 

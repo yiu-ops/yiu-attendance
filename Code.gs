@@ -1,6 +1,6 @@
 // ==============================================
 // 용인대학교 교직원 회의 출석 시스템 - Code.gs
-// 버전: 2.1.1 (중복 출석 방지 오탐 수정: 서버 핑거프린트 → 클라이언트 localStorage deviceId 우선 사용)
+// 버전: 2.2.0 (QR GPS 미수집, 이메일 활성화 토글, 단계별 UI 지원)
 // ==============================================
 
 // 관리자 설정 (배포 전 수정 필요)
@@ -21,7 +21,8 @@ const DEFAULT_SETTINGS = {
   qr_token_validity_minutes: '15',
   rate_limit_per_minute: '5',
   location_mode: 'outdoor',
-  prevent_proxy_attendance: 'false'
+  prevent_proxy_attendance: 'false',
+  email_enabled: 'true'
 };
 
 // 시트 이름
@@ -508,15 +509,16 @@ function saveAttendanceImproved(data) {
     sheet.appendRow(rowData);
     console.log('출석 데이터 저장 완료:', sessionId);
 
-    // 이메일 발송 (이메일이 있는 경우에만)
+    // 이메일 발송 (이메일 기능 활성화 + 이메일 주소가 있는 경우에만)
     var emailResult = { success: false };
-    if (emailValue) {
+    var emailEnabled = settings.email_enabled !== 'false';
+    if (emailEnabled && emailValue) {
       emailResult = sendAttendanceEmail(data, sessionId, Math.round(locationResult.distance), currentEventId);
     }
 
     return {
       success: true,
-      message: emailValue ? '출석이 완료되었습니다!\n확인 이메일이 발송되었습니다.' : '출석이 완료되었습니다!',
+      message: (emailEnabled && emailValue) ? '출석이 완료되었습니다!\n확인 이메일이 발송되었습니다.' : '출석이 완료되었습니다!',
       distance: Math.round(locationResult.distance),
       sessionId: sessionId,
       eventId: currentEventId,
