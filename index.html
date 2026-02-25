@@ -498,8 +498,8 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
           </svg>
         </div>
-        <p class="step-title" id="startTitle">교직원 회의<br>출석 체크</p>
-        <p class="step-desc" id="startDesc">아래 버튼을 눌러 출석을 시작하세요</p>
+        <p class="step-title">출석 체크</p>
+        <p class="step-desc">아래 버튼을 눌러 출석을 시작하세요</p>
         <button class="btn-primary" onclick="goToNameStep()">출석 체크 시작</button>
       </div>
 
@@ -822,9 +822,10 @@
 
     function applySettings(settings) {
       if (settings.meeting_title) {
-        document.querySelectorAll('#meetingTitle, #startTitle').forEach(el => {
-          if (el) el.textContent = settings.meeting_title;
-        });
+        const titleEl = document.getElementById('meetingTitle');
+        if (titleEl) titleEl.textContent = settings.meeting_title;
+        const startTitleEl = document.getElementById('startTitle');
+        if (startTitleEl) startTitleEl.textContent = settings.meeting_title;
       }
       if (settings.target_latitude)  state.locationSettings.latitude  = parseFloat(settings.target_latitude);
       if (settings.target_longitude) state.locationSettings.longitude = parseFloat(settings.target_longitude);
@@ -928,8 +929,12 @@
         hideStepError('emailError');
       }
       if (state.locationMode === 'indoor') {
+        if (state.isQrVerified) {
+          // QR URL로 진입 → 재촬영 불필요, 바로 제출
+          doSubmit();
+          return;
+        }
         goToScreen('screen-qr');
-        if (state.isQrVerified) showQrSuccess();
       } else {
         goToScreen('screen-gps');
         setTimeout(startLocationCheck, 400);
