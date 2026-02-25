@@ -511,7 +511,7 @@
         <p class="step-desc">본인의 성명을 정확히 입력해 주세요</p>
         <label class="label-lg" for="inputName">성명 <span class="text-red-500">*</span></label>
         <input id="inputName" type="text" class="input-lg" placeholder="홍길동" maxlength="20"
-               autocomplete="name" autofocus
+               autocomplete="name"
                oninput="validateStepInput('inputName','nameError','btn-name-next', 2)"
                onkeydown="if(event.key==='Enter'){document.getElementById('btn-name-next').click()}">
         <p id="nameError" class="text-red-500 text-sm mt-2 hidden"></p>
@@ -529,7 +529,7 @@
         <p class="step-desc">소속 학과 또는 부서를 입력해 주세요</p>
         <label class="label-lg" for="inputDept">소속 <span class="text-red-500">*</span></label>
         <input id="inputDept" type="text" class="input-lg" placeholder="경영학과, 교무팀 등" maxlength="50"
-               autocomplete="organization-title" autofocus
+               autocomplete="organization-title"
                oninput="validateStepInput('inputDept','deptError','btn-dept-next', 2)"
                onkeydown="if(event.key==='Enter'){document.getElementById('btn-dept-next').click()}">
         <p id="deptError" class="text-red-500 text-sm mt-2 hidden"></p>
@@ -547,7 +547,7 @@
         <p class="step-desc">출석 확인증을 받으실 이메일을 입력해 주세요<br><span class="text-indigo-500 font-semibold">입력하지 않아도 됩니다</span></p>
         <label class="label-lg" for="inputEmail">이메일 <span class="text-gray-400 font-normal text-base">(선택)</span></label>
         <input id="inputEmail" type="email" class="input-lg" placeholder="example@yiu.ac.kr" maxlength="100"
-               autocomplete="email" autofocus
+               autocomplete="email"
                oninput="validateEmailInput()"
                onkeydown="if(event.key==='Enter'){document.getElementById('btn-email-next').click()}">
         <p id="emailError" class="text-red-500 text-sm mt-2 hidden"></p>
@@ -674,13 +674,6 @@
         <p class="step-desc">이전 회의의 QR 코드이거나 만료된 QR 코드입니다.<br>관리자에게 현재 회의 QR 코드를 요청해 주세요.</p>
       </div>
 
-      <!-- 로딩 오버레이 -->
-      <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-2xl text-center max-w-sm mx-4">
-          <div class="spinner w-12 h-12 mx-auto mb-4"></div>
-          <p id="loadingText" class="font-medium text-gray-700 dark:text-gray-300 text-lg">처리중입니다...</p>
-        </div>
-      </div>
     </div>
 
     <!-- 내 출석 확인 -->
@@ -727,6 +720,14 @@
   </div>
 
 
+  <!-- 로딩 오버레이: body 직접 자식 (backdrop-filter 간섭 방지) -->
+  <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-2xl text-center max-w-sm mx-4">
+      <div class="spinner w-12 h-12 mx-auto mb-4"></div>
+      <p id="loadingText" class="font-medium text-gray-700 dark:text-gray-300 text-lg">처리중입니다...</p>
+    </div>
+  </div>
+
   <script>
     // =====================================================================
     // 설정 및 전역 상태
@@ -772,8 +773,8 @@
       state.qrEventId = urlParams.get('eid') || null;
       if (state.qrEntryFlag) history.replaceState(null, '', window.location.pathname);
 
-      loadSettingsFromServer();
-      fetchCurrentEventId();
+      // 이벤트ID 먼저 확보 후 설정 로드 (경쟁 조건 방지)
+      fetchCurrentEventId().then(() => loadSettingsFromServer());
     });
 
     function getDeviceId() {
@@ -861,13 +862,10 @@
     }
 
     function fetchCurrentEventId() {
-      callGoogleScript('getSystemStatus', null)
+      return callGoogleScript('getSystemStatus', null)
         .then(result => {
           if (result && result.success && result.currentEventId) {
             state.currentEventId = result.currentEventId;
-            if (hasAlreadyAttended(state.currentEventId)) {
-              showDoneFromStorage(state.currentEventId);
-            }
           }
         })
         .catch(() => {});
