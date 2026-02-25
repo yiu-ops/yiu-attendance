@@ -1,6 +1,6 @@
 // ==============================================
 // 용인대학교 교직원 회의 출석 시스템 - Code.gs
-// 버전: 2.1.0 (실내 모드 GPS 생략, XSS 방어, 중복 출석 방지 강화)
+// 버전: 2.1.1 (중복 출석 방지 오탐 수정: 서버 핑거프린트 → 클라이언트 localStorage deviceId 우선 사용)
 // ==============================================
 
 // 관리자 설정 (배포 전 수정 필요)
@@ -1133,9 +1133,22 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
 
 /**
  * 기기 ID 생성 (안정적)
+ *
+ * 우선순위:
+ * 1. 클라이언트가 localStorage에 저장해 전송한 고유 deviceId 사용 (가장 신뢰성 높음)
+ * 2. 없을 경우 브라우저 핑거프린트 해시로 폴백 (같은 기종이면 충돌 가능성 있으므로 최후 수단)
  */
 function generateImprovedDeviceId(data, deviceAnalysis) {
   try {
+    // 클라이언트 localStorage 기반 고유 ID 우선 사용
+    // index.html에서 'dev_' + Date.now() + '_' + random 형식으로 생성됨
+    if (data.deviceId && typeof data.deviceId === 'string' && data.deviceId.length >= 10) {
+      console.log('클라이언트 기기 ID 사용:', data.deviceId);
+      return data.deviceId;
+    }
+
+    // 폴백: 브라우저 핑거프린트 해시 (구형 클라이언트 호환용)
+    console.warn('클라이언트 deviceId 없음, 핑거프린트 폴백 사용');
     var components = [
       data.userAgent ? data.userAgent.replace(/[\d\.\s]+/g, '').substring(0, 100) : 'unknown',
       data.screenInfo || 'unknown',
@@ -1161,7 +1174,7 @@ function generateImprovedDeviceId(data, deviceAnalysis) {
       deviceId = deviceId.substring(0, 20);
     }
 
-    console.log('생성된 기기 ID:', deviceId);
+    console.log('생성된 기기 ID (핑거프린트):', deviceId);
     return deviceId;
 
   } catch (error) {
